@@ -1,73 +1,145 @@
 <template>
   <div class="account-box">
     <div class="head-opt">
-      <Icon v-perm="'account:add'" class="icon add" icon="ion:add-outline" width="23" height="23" @click="add"/>
-      <Icon class="icon refresh" icon="ion:reload" width="18" height="18" @click="refresh"/>
+      <div class="head-title">
+        <span class="fleuron">✦</span>
+        <span class="title-text">密匣印籍</span>
+        <span class="title-sub">Accounts</span>
+      </div>
+      <div class="head-actions">
+        <el-tooltip :content="$t('addAccount') || '添设新邮箱'" placement="top" :show-after="300">
+          <button v-perm="'account:add'" class="head-btn add-btn" @click="add" aria-label="Add account">
+            <Icon icon="solar:user-plus-rounded-linear" width="16" height="16"/>
+          </button>
+        </el-tooltip>
+        <el-tooltip content="刷新印籍列表" placement="top" :show-after="300">
+          <button class="head-btn refresh-btn" :class="{ 'is-spinning': loading }" @click="refresh" aria-label="Refresh">
+            <Icon icon="solar:restart-linear" width="15" height="15"/>
+          </button>
+        </el-tooltip>
+      </div>
     </div>
     <el-scrollbar class="scrollbar" ref="scrollbarRef">
       <div v-infinite-scroll="getAccountList" :infinite-scroll-distance="600" :infinite-scroll-immediate="false">
-        <el-card class="item" :class="itemBg(item.accountId)" v-for="(item, index) in accounts" :key="item.accountId"
-                 @click="changeAccount(item)">
-          <div class="account">
-            {{ item.email }}
-          </div>
-          <div class="opt">
-            <div class="send-email" @click.stop>
-              <Icon @click="setAllReceive(item)" v-if="!item.allReceive" icon="eva:email-fill" width="22" height="22" color="#fccb1a"/>
-              <Icon @click="setAllReceive(item)" v-else icon="flat-color-icons:folder" width="22" height="22" color="#23c4f1" />
+        <div
+          class="account-card item"
+          :class="[itemBg(item.accountId), { 'is-active': accountStore.currentAccountId === item.accountId }]"
+          v-for="(item, index) in accounts"
+          :key="item.accountId"
+          @click="changeAccount(item)"
+        >
+          <!-- Top Row: Avatar seal, email, active badge -->
+          <div class="card-top">
+            <div class="account-seal">
+              <span class="seal-letter">{{ (item.email || 'A')[0].toUpperCase() }}</span>
             </div>
-            <div class="settings" @click.stop>
-              <Icon icon="fluent-color:clipboard-24" width="22" height="22" @click.stop="copyAccount(item.email)"/>
-              <Icon icon="fluent:settings-24-filled" width="21" height="21" color="#909399"
-                    v-if="showNullSetting(item)"/>
-              <el-dropdown v-else>
-                <Icon icon="fluent:settings-24-filled" width="21" height="21" color="#909399"/>
+            <div class="account-meta">
+              <div class="account-email" :title="item.email">{{ item.email }}</div>
+              <div class="account-name" v-if="item.name">{{ item.name }}</div>
+            </div>
+            <div class="active-badge" v-if="accountStore.currentAccountId === item.accountId">
+              <span class="badge-dot">✦</span>
+              <span class="badge-text">启阅</span>
+            </div>
+          </div>
+
+          <!-- Bottom Row: Receive mode switcher & Actions -->
+          <div class="card-bottom" @click.stop>
+            <div class="mode-wrap">
+              <el-tooltip
+                :content="item.allReceive ? '已启用全域收信：该域名所有前缀邮件均归此匣' : '专属单信模式：仅接收此邮箱地址之信件（点击切换全收）'"
+                placement="top"
+                :show-after="300"
+              >
+                <button
+                  class="mode-badge-btn"
+                  :class="item.allReceive ? 'is-catchall' : 'is-single'"
+                  @click.stop="setAllReceive(item)"
+                >
+                  <Icon :icon="item.allReceive ? 'solar:archive-linear' : 'solar:letter-linear'" width="13" height="13"/>
+                  <span>{{ item.allReceive ? '全域收信' : '专属信箱' }}</span>
+                </button>
+              </el-tooltip>
+            </div>
+
+            <div class="card-actions">
+              <el-tooltip :content="$t('copy') || '复制地址'" placement="top" :show-after="300">
+                <button class="action-btn copy-btn" @click.stop="copyAccount(item.email)" aria-label="Copy">
+                  <Icon icon="solar:copy-linear" width="14" height="14"/>
+                </button>
+              </el-tooltip>
+
+              <div v-if="showNullSetting(item)"></div>
+              <el-dropdown v-else trigger="click" @click.stop>
+                <button class="action-btn more-btn" aria-label="More">
+                  <Icon icon="solar:menu-dots-bold" width="14" height="14"/>
+                </button>
                 <template #dropdown>
-                  <el-dropdown-menu>
-                    <el-dropdown-item v-if="hasPerm('email:send')" @click="openSetName(item)">{{ $t('rename') }}</el-dropdown-item>
-                    <el-dropdown-item v-if="item.accountId !== userStore.user.account.accountId" @click="setAsTop(item, index)">{{ $t('pin') }}</el-dropdown-item>
-                    <el-dropdown-item v-if="item.accountId !== userStore.user.account.accountId && hasPerm('account:delete')"
-                                      @click="remove(item)">{{ $t('delete') }}
+                  <el-dropdown-menu class="codex-dropdown-menu">
+                    <el-dropdown-item v-if="hasPerm('email:send')" @click="openSetName(item)">
+                      <Icon icon="solar:pen-linear" width="14" height="14" style="margin-right: 6px"/>
+                      {{ $t('rename') }}
+                    </el-dropdown-item>
+                    <el-dropdown-item v-if="item.accountId !== userStore.user.account.accountId" @click="setAsTop(item, index)">
+                      <Icon icon="solar:pin-linear" width="14" height="14" style="margin-right: 6px"/>
+                      {{ $t('pin') }}
+                    </el-dropdown-item>
+                    <el-dropdown-item
+                      v-if="item.accountId !== userStore.user.account.accountId && hasPerm('account:delete')"
+                      divided
+                      class="danger-menu-item"
+                      @click="remove(item)"
+                    >
+                      <Icon icon="solar:trash-bin-trash-linear" width="14" height="14" style="margin-right: 6px; color: #b84a5b"/>
+                      <span style="color: #b84a5b">{{ $t('delete') }}</span>
                     </el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
             </div>
           </div>
-        </el-card>
+        </div>
 
         <!-- Initial Loading Skeleton -->
         <template v-if="loading">
-          <el-skeleton v-for="i in skeletonRows" :key="i" animated>
-            <template #template>
-              <el-card class="item">
-                <el-skeleton-item variant="p" style="width: 70%; height: 20px; margin-bottom: 25px"/>
-                <div style="display: flex; justify-content: space-between">
-                  <el-skeleton-item variant="text" style="width: 20px"/>
-                  <el-skeleton-item variant="text" style="width: 20px"/>
+          <div class="account-card skeleton-card" v-for="i in skeletonRows" :key="i">
+            <el-skeleton animated>
+              <template #template>
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                  <el-skeleton-item variant="circle" style="width: 24px; height: 24px"/>
+                  <el-skeleton-item variant="text" style="width: 70%; height: 14px"/>
                 </div>
-              </el-card>
-            </template>
-          </el-skeleton>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <el-skeleton-item variant="button" style="width: 65px; height: 20px; border-radius: 4px"/>
+                  <el-skeleton-item variant="circle" style="width: 22px; height: 22px"/>
+                </div>
+              </template>
+            </el-skeleton>
+          </div>
         </template>
 
         <!-- Follow Loading Skeleton -->
         <template v-if="accounts.length > 0 && !noLoading">
-          <el-skeleton animated>
-            <template #template>
-              <el-card class="item">
-                <el-skeleton-item variant="p" style="width: 70%; height: 20px; margin-bottom: 20px"/>
-                <div style="display: flex; justify-content: space-between">
-                  <el-skeleton-item variant="text" style="width: 20px"/>
-                  <el-skeleton-item variant="text" style="width: 20px"/>
+          <div class="account-card skeleton-card">
+            <el-skeleton animated>
+              <template #template>
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                  <el-skeleton-item variant="circle" style="width: 24px; height: 24px"/>
+                  <el-skeleton-item variant="text" style="width: 70%; height: 14px"/>
                 </div>
-              </el-card>
-            </template>
-          </el-skeleton>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <el-skeleton-item variant="button" style="width: 65px; height: 20px; border-radius: 4px"/>
+                  <el-skeleton-item variant="circle" style="width: 22px; height: 22px"/>
+                </div>
+              </template>
+            </el-skeleton>
+          </div>
         </template>
 
         <div class="noLoading" v-if="noLoading && accounts.length > 0">
-          <div>{{ $t('noMoreData') }}</div>
+          <span class="colophon-star">❖</span>
+          <span class="colophon-text">全册印籍已阅毕</span>
+          <span class="colophon-star">❖</span>
         </div>
         <div class="empty" v-if="noLoading && accounts.length === 0">
           <el-empty :description="$t('noMessagesFound')"/>
@@ -514,123 +586,294 @@ function submit() {
   })
 }
 </script>
-<style>
-path[fill="#ffdda1"] {
-  fill: #ffdd7d;
-}
-</style>
 <style scoped lang="scss">
 .account-box {
-
   border-right: 1px solid var(--el-border-color) !important;
   background-color: var(--el-bg-color);
   height: 100%;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 
   .head-opt {
     display: flex;
     align-items: center;
-    height: 38px;
-    box-shadow: var(--header-actions-border);
-    padding-left: 10px;
-    padding-right: 10px;
+    justify-content: space-between;
+    height: 42px;
+    padding: 0 12px;
+    border-bottom: 1px solid var(--el-border-color);
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(8px);
+    flex-shrink: 0;
 
-    .icon {
-      cursor: pointer;
+    .head-title {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+
+      .fleuron {
+        color: #b38848;
+        font-size: 11px;
+      }
+
+      .title-text {
+        font-family: var(--font-mincho), "Songti SC", serif;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--aside-text-color, #2b2338);
+        letter-spacing: 0.08em;
+      }
+
+      .title-sub {
+        font-family: var(--font-serif-italic), "Cormorant Garamond", Georgia, serif;
+        font-size: 11px;
+        font-style: italic;
+        color: #8a486b;
+        opacity: 0.85;
+      }
     }
 
-    .refresh {
-      margin-left: 10px;
-    }
+    .head-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
 
-    .add {
-      margin-left: 2px;
-    }
+      .head-btn {
+        width: 26px;
+        height: 26px;
+        border-radius: 6px;
+        border: 1px solid rgba(220, 208, 228, 0.7);
+        background: rgba(255, 255, 255, 0.85);
+        color: #554460;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        padding: 0;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 
-    .head-opt:not(.add) .refresh {
-      margin-left: 5px;
+        &:hover {
+          background: #8a486b;
+          color: #ffffff;
+          border-color: #8a486b;
+          transform: translateY(-1px);
+          box-shadow: 0 3px 8px rgba(138, 72, 107, 0.2);
+        }
+
+        &.is-spinning {
+          animation: spin 1s linear infinite;
+        }
+      }
     }
   }
 
   .scrollbar {
     width: 100%;
-    height: calc(100% - 38px);
+    flex: 1;
     overflow: auto;
-    @media (max-width: 767px) {
-      height: calc(100% - 98px);
-    }
 
     .empty {
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100%;
+      min-height: 180px;
     }
 
     .noLoading {
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 10px 0;
-      color: var(--secondary-text-color);
+      gap: 6px;
+      padding: 16px 0;
+      font-size: 11.5px;
+      font-family: var(--font-mincho), serif;
+      color: #9589a3;
+      letter-spacing: 0.06em;
+
+      .colophon-star {
+        color: #b38848;
+        font-size: 10px;
+      }
     }
   }
 
-  .btn {
-    width: 100%;
-    margin-top: 15px;
-  }
-
-  .item {
-    background-color: var(--el-bg-color);
-    border-radius: 8px;
-    padding: 10px;
-    margin-bottom: 11px;
-    margin-left: 10px;
-    margin-right: 10px;
+  .account-card {
+    background: #ffffff;
+    border-radius: 9px;
+    padding: 10px 12px;
+    margin: 8px 10px;
+    border: 1px solid var(--el-border-color);
+    box-shadow: 0 1px 3px rgba(43, 35, 56, 0.03);
     cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
 
-    .account {
-      font-weight: 400;
-      font-size: 15px;
-      margin-bottom: 20px;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(138, 72, 107, 0.08), inset 0 0 0 1px rgba(179, 136, 72, 0.2);
+      border-color: rgba(138, 72, 107, 0.4);
     }
 
-    .opt {
+    &.item-choose,
+    &.is-active {
+      background: linear-gradient(135deg, rgba(138, 72, 107, 0.06) 0%, #ffffff 50%, rgba(179, 136, 72, 0.04) 100%);
+      border-color: rgba(138, 72, 107, 0.45);
+      border-left: 3px solid #8a486b !important;
+      box-shadow: 0 4px 14px rgba(138, 72, 107, 0.08), inset 0 0 0 1px rgba(179, 136, 72, 0.12);
+    }
+
+    .card-top {
       display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 9px;
+
+      .account-seal {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        background: rgba(138, 72, 107, 0.08);
+        border: 1px solid rgba(138, 72, 107, 0.2);
+        color: #8a486b;
+        font-family: var(--font-serif-italic), Georgia, serif;
+        font-size: 13px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .account-meta {
+        flex: 1;
+        min-width: 0;
+
+        .account-email {
+          font-size: 12.5px;
+          font-weight: 600;
+          color: #2b2338;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          letter-spacing: 0.01em;
+        }
+
+        .account-name {
+          font-size: 11px;
+          color: #8a486b;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+
+      .active-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        padding: 1px 6px;
+        border-radius: 4px;
+        background: rgba(138, 72, 107, 0.09);
+        border: 1px solid rgba(138, 72, 107, 0.25);
+        color: #8a486b;
+        font-family: var(--font-mincho), serif;
+        font-size: 10px;
+        font-weight: 600;
+        flex-shrink: 0;
+
+        .badge-dot {
+          color: #b38848;
+          font-size: 9px;
+        }
+      }
+    }
+
+    .card-bottom {
+      display: flex;
+      align-items: center;
       justify-content: space-between;
-      font-size: 12px;
-      color: #888;
+      gap: 6px;
 
-      .settings {
-        display: flex;
-        align-items: center;
-        gap: 10px;
+      .mode-wrap {
+        .mode-badge-btn {
+          border: none;
+          outline: none;
+          font-size: 11px;
+          padding: 2px 7px;
+          border-radius: 4px;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+          &.is-single {
+            background: rgba(43, 35, 56, 0.035);
+            border: 1px solid rgba(220, 208, 228, 0.7);
+            color: #6e5a75;
+
+            &:hover {
+              background: rgba(138, 72, 107, 0.08);
+              color: #8a486b;
+              border-color: rgba(138, 72, 107, 0.35);
+            }
+          }
+
+          &.is-catchall {
+            background: rgba(179, 136, 72, 0.12);
+            border: 1px solid rgba(179, 136, 72, 0.35);
+            color: #8d6220;
+            font-weight: 500;
+
+            &:hover {
+              background: rgba(179, 136, 72, 0.2);
+              border-color: rgba(179, 136, 72, 0.5);
+            }
+          }
+        }
       }
 
-      .send-email {
+      .card-actions {
         display: flex;
         align-items: center;
-      }
-    }
+        gap: 6px;
 
-    :deep(.el-card__body) {
-      padding: 0;
+        .action-btn {
+          width: 24px;
+          height: 24px;
+          border-radius: 5px;
+          border: 1px solid rgba(220, 208, 228, 0.6);
+          background: rgba(255, 255, 255, 0.85);
+          color: #6e5a75;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          padding: 0;
+          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+          &:hover {
+            background: rgba(138, 72, 107, 0.1);
+            color: #8a486b;
+            border-color: rgba(138, 72, 107, 0.35);
+            transform: translateY(-1px);
+          }
+        }
+      }
     }
   }
 
-  .item:first-child {
-    margin-top: 10px;
-  }
-
-  .item-choose {
-    background: var(--choose-account-background);
+  .skeleton-card {
+    pointer-events: none;
+    border-style: dashed;
   }
 }
 
+.btn {
+  width: 100%;
+  margin-top: 15px;
+}
 
 .setting-icon {
   position: relative;
@@ -645,6 +888,10 @@ path[fill="#ffdda1"] {
 
 :deep(.el-dialog) {
   width: 400px !important;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--el-border-color);
+  box-shadow: 0 12px 36px rgba(43, 35, 56, 0.12);
   @media (max-width: 440px) {
     width: calc(100% - 40px) !important;
     margin-right: 20px !important;
@@ -679,4 +926,8 @@ path[fill="#ffdda1"] {
   position: fixed;
 }
 
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
 </style>

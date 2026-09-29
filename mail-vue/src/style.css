@@ -164,7 +164,7 @@ button, input, select, textarea {
     --regular-text-color: #635773;
     --light-border-color: #dcd0e4;
     --aside-right-border: 1px solid #dcd0e4;
-    --choose-account-background: #f0dbe7;
+    --choose-account-background: rgba(138, 72, 107, 0.08);
     --el-text-color-regular: var(--el-text-color-primary);
     --email-scroll-content-color: rgba(43, 35, 56, 0.65);
     --email-hover-background: #faf7fd;
@@ -384,4 +384,40 @@ html[data-theme-to="light"]::view-transition-old(root) {
 [data-theme="codex"] .el-input__wrapper.is-focus {
     box-shadow: 0 0 0 1px #8a486b inset, 0 0 8px rgba(138, 72, 107, 0.15) !important;
 }
+
+.codex-dropdown-menu {
+    border: 1px solid #dcd0e4 !important;
+    border-radius: 9px !important;
+    box-shadow: 0 8px 24px rgba(43, 35, 56, 0.1) !important;
+    background: #ffffff !important;
+    padding: 5px !important;
+}
+
+.codex-dropdown-menu .el-dropdown-menu__item {
+    font-size: 12.5px !important;
+    border-radius: 6px !important;
+    padding: 6px 12px !important;
+    color: #2b2338 !important;
+    display: flex !important;
+    align-items: center !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.codex-dropdown-menu .el-dropdown-menu__item:hover {
+    background-color: rgba(138, 72, 107, 0.08) !important;
+    color: #8a486b !important;
+}
+
+.codex-dropdown-menu .el-dropdown-menu__item.danger-menu-item:hover {
+    background-color: rgba(184, 74, 91, 0.08) !important;
+    color: #b84a5b !important;
+}
+
+.el-empty__description p {
+    font-family: var(--font-mincho), "Songti SC", serif !important;
+    color: #9589a3 !important;
+    font-size: 13px !important;
+    letter-spacing: 0.05em !important;
+}
+
 

@@ -5,12 +5,18 @@
 </template>
 <script setup>
 import { useI18n } from "vue-i18n";
-import { watch } from "vue";
+import { watch, onMounted } from "vue";
 import {useSettingStore} from "@/store/setting.js";
+import {useUiStore} from "@/store/ui.js";
 const settingStore = useSettingStore()
+const uiStore = useUiStore()
 import zhCn from 'element-plus/es/locale/lang/zh-cn';
 import('@/icons/index.js')
 const { locale } = useI18n()
 locale.value = settingStore.lang
 watch(() => settingStore.lang, () => locale.value = settingStore.lang)
+
+onMounted(() => {
+  uiStore.setTheme(uiStore.currentTheme || 'codex')
+})
 </script>

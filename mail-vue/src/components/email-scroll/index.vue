@@ -968,6 +968,7 @@ function loadData() {
   }
 }
 
+.email-row,
 :deep(.email-row) {
   display: flex;
   margin: 4px 14px;
