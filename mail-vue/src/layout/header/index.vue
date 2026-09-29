@@ -415,30 +415,31 @@ function formatName(email) {
   margin-left: 5px;
 
   .writer {
-    padding: 0 14px;
+    padding: 0 16px;
     height: 32px;
-    border-radius: 20px;
+    border-radius: 6px;
     color: #ffffff;
-    background: var(--el-color-primary);
-    box-shadow: 0 2px 10px -2px var(--el-color-primary);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: linear-gradient(135deg, #8a486b 0%, #723755 100%);
+    box-shadow: 0 2px 8px rgba(138, 72, 107, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(138, 72, 107, 0.5);
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     display: inline-flex;
     align-items: center;
     gap: 6px;
     font-family: var(--font-mincho);
     font-size: 13px;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
 
     &:hover {
       transform: translateY(-1px);
-      box-shadow: 0 4px 14px -1px var(--el-color-primary);
+      box-shadow: 0 4px 16px rgba(138, 72, 107, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      border-color: #aa6a8d;
     }
 
     .writer-text {
       margin-left: 2px;
       font-size: 12.5px;
-      font-weight: 500;
+      font-weight: 600;
     }
   }
 }

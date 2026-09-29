@@ -84,14 +84,31 @@ const route = useRoute();
 <style lang="scss" scoped>
 
 .aside-brand {
-  margin: 16px 14px 10px;
-  padding: 12px 10px;
+  margin: 16px 14px 12px;
+  padding: 14px 12px 12px;
   border-radius: 8px;
   text-align: center;
-  background: var(--aside-brand-bg, rgba(138, 72, 107, 0.06));
+  background: var(--aside-brand-bg, rgba(138, 72, 107, 0.05));
   border: 1px solid var(--el-border-color);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6), 0 2px 6px rgba(43, 35, 56, 0.02);
   position: relative;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &::before, &::after {
+    content: "✦";
+    position: absolute;
+    top: 6px;
+    font-size: 8px;
+    color: var(--el-color-primary);
+    opacity: 0.45;
+  }
+  &::before { left: 8px; }
+  &::after { right: 8px; }
+
+  &:hover {
+    border-color: rgba(179, 136, 72, 0.45);
+    box-shadow: 0 4px 12px rgba(138, 72, 107, 0.08);
+  }
 
   .brand-crest {
     font-size: 13px;
@@ -144,8 +161,8 @@ const route = useRoute();
   font-weight: 600;
   background: var(--aside-menu-active-background) !important;
   color: var(--el-color-primary) !important;
-  border-left: 2px solid var(--el-color-primary) !important;
-  backdrop-filter: blur(4px);
+  border-left: 3px solid var(--el-color-primary) !important;
+  box-shadow: inset 0 0 12px rgba(138, 72, 107, 0.04);
 }
 
 @media (hover: hover) {

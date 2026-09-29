@@ -105,6 +105,12 @@
               </div>
             </div>
           </div>
+          <!-- Antique Codex Letter Colophon Footer -->
+          <div class="epistle-colophon-footer">
+            <span class="footer-fleuron">❖</span>
+            <span class="footer-text">EX ARCHIVUM EPISTOLARUM · 雲端手抄密匣</span>
+            <span class="footer-fleuron">❖</span>
+          </div>
         </div>
       </div>
     </el-scrollbar>
@@ -461,11 +467,13 @@ const handleDelete = () => {
 
     .att {
       margin-top: 30px;
-      margin-bottom: 30px;
-      border: 1px solid var(--light-border-color);
-      padding: 14px;
-      border-radius: 6px;
+      margin-bottom: 24px;
+      border: 1px solid var(--el-border-color);
+      background: rgba(138, 72, 107, 0.02);
+      padding: 16px;
+      border-radius: 8px;
       width: fit-content;
+
       .att-box {
         min-width: min(410px,calc(100vw - 60px));
         max-width: 600px;
@@ -475,25 +483,43 @@ const handleDelete = () => {
       }
 
       .att-title {
-        margin-bottom: 8px;
+        font-family: var(--font-mincho);
+        letter-spacing: 0.06em;
+        margin-bottom: 12px;
         display: flex;
         justify-content: space-between;
         span:first-child {
-          font-weight: bold;
+          font-weight: 600;
+          color: var(--el-text-color-primary);
+        }
+        span:last-child {
+          font-family: var(--font-serif-italic);
+          font-style: italic;
+          color: var(--el-text-color-secondary);
         }
       }
 
       .att-item {
         cursor: pointer;
-        div {
-          align-self: center;
-        }
-        background: var(--light-ill);
-        padding: 5px 7px;
-        border-radius: 4px;
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--el-border-color-lighter);
+        box-shadow: 0 1px 4px rgba(43, 35, 56, 0.03);
+        padding: 6px 10px;
+        border-radius: 6px;
         align-self: start;
         display: grid;
         grid-template-columns: auto 1fr auto auto;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+        &:hover {
+          border-color: var(--el-color-primary);
+          transform: translateY(-1px);
+        }
+
+        div {
+          align-self: center;
+        }
+
         .att-icon {
           display: grid;
         }
@@ -530,6 +556,26 @@ const handleDelete = () => {
             display: flex;
           }
         }
+      }
+    }
+
+    .epistle-colophon-footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 36px;
+      padding-top: 18px;
+      border-top: 1px dashed var(--el-border-color-lighter);
+      font-family: var(--font-serif-italic);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      color: var(--el-text-color-secondary);
+      opacity: 0.7;
+
+      .footer-fleuron {
+        font-size: 10px;
+        color: var(--el-color-primary);
       }
     }
 

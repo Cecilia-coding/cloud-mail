@@ -333,3 +333,55 @@ html[data-theme-to="light"]::view-transition-old(root) {
     from { clip-path: circle(var(--vt-end-radius, 0px) at var(--vt-x) var(--vt-y)); }
     to   { clip-path: circle(0px at var(--vt-x) var(--vt-y)); }
 }
+
+/* ✦ Codex Theme Custom Scrollbar & Element Plus Refinements ✦ */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--dark-border, #dcd0e4);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--el-color-primary, #8a486b);
+}
+
+[data-theme="codex"] .el-button--primary {
+    background: linear-gradient(135deg, #8a486b 0%, #723755 100%);
+    border-color: #8a486b;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(138, 72, 107, 0.2);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="codex"] .el-button--primary:hover {
+    background: linear-gradient(135deg, #9a547a 0%, #824163 100%);
+    border-color: #aa6a8d;
+    box-shadow: 0 4px 14px rgba(138, 72, 107, 0.32);
+    transform: translateY(-1px);
+}
+
+[data-theme="codex"] .el-checkbox__input.is-checked .el-checkbox__inner {
+    background-color: #8a486b;
+    border-color: #8a486b;
+}
+
+[data-theme="codex"] .el-checkbox__inner:hover {
+    border-color: #8a486b;
+}
+
+[data-theme="codex"] .el-input__wrapper {
+    background-color: #ffffff;
+    border-radius: 6px;
+    box-shadow: 0 0 0 1px #dcd0e4 inset;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="codex"] .el-input__wrapper.is-focus {
+    box-shadow: 0 0 0 1px #8a486b inset, 0 0 8px rgba(138, 72, 107, 0.15) !important;
+}
+

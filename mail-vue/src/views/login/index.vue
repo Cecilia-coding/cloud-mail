@@ -1,31 +1,33 @@
 <template>
-  <div id="login-box" :style=" background ? 'background: var(--el-bg-color)' : ''" v-loading="oauthLoading" element-loading-text="登录中...">
+  <div id="login-box" :style=" background ? 'background: var(--el-bg-color)' : ''" v-loading="oauthLoading" element-loading-text="登录中..." @mousemove="handleMouseMove" @mouseleave="handleMouseLeave">
     <div id="background-wrap" v-if="!settingStore.settings.background">
       <div class="astrolabe-viewport">
-        <div class="astrolabe-container">
-          <div class="astro-ring ring-outer">
-            <span class="astro-deg deg-0">N 0°</span>
-            <span class="astro-deg deg-90">E 90°</span>
-            <span class="astro-deg deg-180">S 180°</span>
-            <span class="astro-deg deg-270">W 270°</span>
-          </div>
-          <div class="astro-ring ring-zodiac">
-            <span class="zodiac-glyph z1">✦</span>
-            <span class="zodiac-glyph z2">❖</span>
-            <span class="zodiac-glyph z3">✧</span>
-            <span class="zodiac-glyph z4">✦</span>
-            <span class="zodiac-glyph z5">❖</span>
-            <span class="zodiac-glyph z6">✧</span>
-            <span class="zodiac-glyph z7">✦</span>
-            <span class="zodiac-glyph z8">❖</span>
-          </div>
-          <div class="astro-ring ring-inner"></div>
-          <div class="astro-axis axis-cross"></div>
-          <div class="astro-axis axis-diag"></div>
-          <div class="astro-core">
-            <div class="core-fleuron">✦</div>
-            <div class="core-title">HOROLOGIUM CELESTE</div>
-            <div class="core-motto">Veritas in Silentio · Ad Astra</div>
+        <div class="astrolabe-float-stage">
+          <div class="astrolabe-container" :style="{ transform: `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg)` }">
+            <div class="astro-ring ring-outer">
+              <span class="astro-deg deg-0">N 0°</span>
+              <span class="astro-deg deg-90">E 90°</span>
+              <span class="astro-deg deg-180">S 180°</span>
+              <span class="astro-deg deg-270">W 270°</span>
+            </div>
+            <div class="astro-ring ring-zodiac">
+              <span class="zodiac-glyph z1">✦</span>
+              <span class="zodiac-glyph z2">❖</span>
+              <span class="zodiac-glyph z3">✧</span>
+              <span class="zodiac-glyph z4">✦</span>
+              <span class="zodiac-glyph z5">❖</span>
+              <span class="zodiac-glyph z6">✧</span>
+              <span class="zodiac-glyph z7">✦</span>
+              <span class="zodiac-glyph z8">❖</span>
+            </div>
+            <div class="astro-ring ring-inner"></div>
+            <div class="astro-axis axis-cross"></div>
+            <div class="astro-axis axis-diag"></div>
+            <div class="astro-core">
+              <div class="core-fleuron">✦</div>
+              <div class="core-title">HOROLOGIUM CELESTE</div>
+              <div class="core-motto">Veritas in Silentio · Ad Astra</div>
+            </div>
           </div>
         </div>
       </div>
@@ -208,6 +210,22 @@ const bindLoading = ref(false)
 const oauthLoading = ref(false);
 const showBindForm = ref(false);
 const show = ref('login')
+
+const tiltX = ref(0)
+const tiltY = ref(0)
+
+const handleMouseMove = (e) => {
+  const { clientX, clientY } = e
+  const centerX = window.innerWidth / 2
+  const centerY = window.innerHeight / 2
+  tiltX.value = Number((((clientY - centerY) / centerY) * -6).toFixed(2))
+  tiltY.value = Number((((clientX - centerX) / centerX) * 6).toFixed(2))
+}
+
+const handleMouseLeave = () => {
+  tiltX.value = 0
+  tiltY.value = 0
+}
 
 const oauthKeys = ['linuxdo', 'github', 'google']
 
@@ -910,6 +928,15 @@ function submitRegister() {
   }
 }
 
+.astrolabe-float-stage {
+  animation: astrolabeFloat 10s ease-in-out infinite alternate;
+}
+
+@keyframes astrolabeFloat {
+  0% { transform: translateY(-7px) scale(0.99); }
+  100% { transform: translateY(7px) scale(1.01); }
+}
+
 .astrolabe-container {
   position: relative;
   width: 580px;
@@ -917,12 +944,8 @@ function submitRegister() {
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: astrolabeFloat 9s ease-in-out infinite alternate;
-}
-
-@keyframes astrolabeFloat {
-  0% { transform: translateY(-8px) scale(0.98); }
-  100% { transform: translateY(8px) scale(1.02); }
+  transform-style: preserve-3d;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .astro-ring {
