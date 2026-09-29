@@ -105,39 +105,57 @@ button, input, select, textarea {
     max-height: 220px !important;
 }
 
-:root {
-    --el-color-primary: #1890ff;
-    --el-color-primary-dark-2: #1064c0;
-    --el-color-primary-light-3: #4dabff;
-    --el-color-primary-light-5: #69c0ff;
-    --el-color-primary-light-7: #91d5ff;
-    --el-color-primary-light-9: #e6f7ff;
+:root,
+:root[data-theme="codex"] {
+    --el-color-primary: #8a486b;
+    --el-color-primary-dark-2: #723755;
+    --el-color-primary-light-3: #aa6a8d;
+    --el-color-primary-light-5: #c68db0;
+    --el-color-primary-light-7: #e2bdd4;
+    --el-color-primary-light-8: #f0dbe7;
+    --el-color-primary-light-9: #f9edf4;
 
-    --extra-light-fill: #FAFCFF;
-    --settings-page-background: #fafbfc;
-    --light-ill: #F5F7FA;
-    --light-border: #E4E7ED;
-    --header-actions-border: inset 0 -1px 0 0 var(--el-border-color-lighter);
-    --aside-backgound: #191A23;
-    --aside-menu-active-background: #27282D;
-    --loadding-background: rgba(255, 255, 255, 0.8);
-    --dark-border: #CDD0D6;
-    --base-fill: #F0F2F5;
-    --regular-text-color: #585d69;
-    --light-border-color: #e7e9ec;
-    --aside-right-border: 3px 0 5px rgba(0, 21, 41, .35);
-    --choose-account-background: var(--el-color-primary-light-8);
+    --el-bg-color: #faf7f2;
+    --el-bg-color-overlay: #ffffff;
+    --el-text-color-primary: #2b2338;
+    --el-text-color-regular: #554d60;
+    --el-text-color-secondary: #877e92;
+    --el-text-color-placeholder: #b5acbe;
+    --el-border-color: #dfd7e4;
+    --el-border-color-light: #ece5ef;
+    --el-border-color-lighter: #f4eef6;
+
+    --extra-light-fill: #faf7f2;
+    --settings-page-background: #f7f3ee;
+    --light-ill: #f4eee8;
+    --light-border: #dfd7e4;
+    --header-actions-border: inset 0 -1px 0 0 #dfd7e4;
+    --aside-backgound: #231d2a;
+    --aside-menu-active-background: rgba(186, 150, 196, 0.16);
+    --loadding-background: rgba(250, 247, 242, 0.85);
+    --dark-border: #c6b9cd;
+    --base-fill: #f2eae2;
+    --regular-text-color: #554d60;
+    --light-border-color: #dfd7e4;
+    --aside-right-border: 1px solid #dfd7e4;
+    --choose-account-background: #f0dbe7;
     --el-text-color-regular: var(--el-text-color-primary);
-    --email-scroll-content-color: rgba(25, 41, 59, 0.4);
-    --email-hover-background: #F2F6FC;
-    --email-right-click-background: #FDF6EC;
-    --login-border: none;
-    --form-desc-color: #71717a;
-    --login-switch-color: #006be6;
-    --scrollbar-track-color: #A8ABB2;
-    --base-border-color: #DCDFE6;
-    --secondary-text-color: #909399;
-    --message-block-color: rgba(0, 0, 0, 0);
+    --email-scroll-content-color: rgba(43, 35, 56, 0.65);
+    --email-hover-background: #f2ece4;
+    --email-right-click-background: #ede3d8;
+    --login-border: 1px solid #dfd7e4;
+    --form-desc-color: #877e92;
+    --login-switch-color: #8a486b;
+    --scrollbar-track-color: #d6ccdc;
+    --base-border-color: #dfd7e4;
+    --secondary-text-color: #877e92;
+    --message-block-color: rgba(138, 72, 107, 0.05);
+
+    --shield-bg: rgba(179, 136, 72, 0.08);
+    --shield-border: rgba(179, 136, 72, 0.28);
+    --shield-text: #8d6220;
+    --shield-badge-bg: #f5ede0;
+
     --loading-hide-transition: all 200ms;
     --vt-x: 50%;
     --vt-y: 50%;
@@ -145,32 +163,105 @@ button, input, select, textarea {
     --vt-easing: ease-out;
 }
 
+:root[data-theme="obsidian"],
 .dark {
-    --extra-light-fill: #191919;
-    --settings-page-background: var(--extra-light-fill);
-    --light-ill: #262727;
-    --light-border: #414243;
-    --aside-backgound: #141414;
-    --aside-menu-active-background: rgba(255, 255, 255, 0.08);
-    --header-actions-border: inset 0 -1px 0 0 var(--el-border-color-lighter);
-    --loadding-background: rgba(0, 0, 0, 0.3);
-    --dark-border: #636466;
-    --base-fill: #303030;
-    --regular-text-color: #bfbdbc;
-    --light-border-color: #414243;
-    --aside-right-border: 3px 0 5px #0A0A0A;
-    --choose-account-background: #39393A;
-    --email-scroll-content-color: rgba(255, 255, 255, 0.3);
-    --email-hover-background: #1D1E1F;
-    --email-right-click-background: var(--email-hover-background);
-    --login-border: none;
-    --form-desc-color: #8D9095;
-    --login-switch-color: rgb(102, 177, 255);
-    --scrollbar-track-color: #8D9095;
-    --base-border-color: #4C4D4F;
-    --secondary-text-color: #A3A6AD;
-    --message-block-color: rgba(30, 30, 30, 0.2);
-    --el-border-color: #414243 !important;
+    --el-color-primary: #3ecf8e;
+    --el-color-primary-dark-2: #2ba870;
+    --el-color-primary-light-3: #58d89b;
+    --el-color-primary-light-5: #80e3b6;
+    --el-color-primary-light-7: #b3eed3;
+    --el-color-primary-light-8: #d1f5e3;
+    --el-color-primary-light-9: #ebfaef;
+
+    --el-bg-color: #121316;
+    --el-bg-color-overlay: #1a1d24;
+    --el-text-color-primary: #e4e7ed;
+    --el-text-color-regular: #a2a7b5;
+    --el-text-color-secondary: #6f7585;
+    --el-text-color-placeholder: #505666;
+    --el-border-color: #282c37 !important;
+    --el-border-color-light: #212530;
+    --el-border-color-lighter: #1c1f28;
+
+    --extra-light-fill: #121316;
+    --settings-page-background: #14161b;
+    --light-ill: #1a1d24;
+    --light-border: #282c37;
+    --header-actions-border: inset 0 -1px 0 0 #282c37;
+    --aside-backgound: #0d0e11;
+    --aside-menu-active-background: rgba(62, 207, 142, 0.12);
+    --loadding-background: rgba(18, 19, 22, 0.85);
+    --dark-border: #3d4353;
+    --base-fill: #1d212b;
+    --regular-text-color: #a2a7b5;
+    --light-border-color: #282c37;
+    --aside-right-border: 1px solid #282c37;
+    --choose-account-background: rgba(62, 207, 142, 0.15);
+    --email-scroll-content-color: rgba(228, 231, 237, 0.55);
+    --email-hover-background: #1a1d26;
+    --email-right-click-background: #222733;
+    --login-border: 1px solid #282c37;
+    --form-desc-color: #6f7585;
+    --login-switch-color: #3ecf8e;
+    --scrollbar-track-color: #3d4353;
+    --base-border-color: #282c37;
+    --secondary-text-color: #6f7585;
+    --message-block-color: rgba(62, 207, 142, 0.05);
+
+    --shield-bg: rgba(62, 207, 142, 0.08);
+    --shield-border: rgba(62, 207, 142, 0.25);
+    --shield-text: #3ecf8e;
+    --shield-badge-bg: rgba(62, 207, 142, 0.14);
+}
+
+:root[data-theme="celadon"] {
+    --el-color-primary: #2e7c65;
+    --el-color-primary-dark-2: #22614f;
+    --el-color-primary-light-3: #4ba087;
+    --el-color-primary-light-5: #71baa4;
+    --el-color-primary-light-7: #a5d7c7;
+    --el-color-primary-light-8: #cbe9e0;
+    --el-color-primary-light-9: #eef7f4;
+
+    --el-bg-color: #f3f6f4;
+    --el-bg-color-overlay: #ffffff;
+    --el-text-color-primary: #182721;
+    --el-text-color-regular: #3f524a;
+    --el-text-color-secondary: #6e827a;
+    --el-text-color-placeholder: #9cb0a8;
+    --el-border-color: #cbdbd0;
+    --el-border-color-light: #dce6df;
+    --el-border-color-lighter: #eaf0ec;
+
+    --extra-light-fill: #f3f6f4;
+    --settings-page-background: #edf3ee;
+    --light-ill: #e8efe9;
+    --light-border: #cbdbd0;
+    --header-actions-border: inset 0 -1px 0 0 #cbdbd0;
+    --aside-backgound: #13201b;
+    --aside-menu-active-background: rgba(46, 124, 101, 0.18);
+    --loadding-background: rgba(243, 246, 244, 0.85);
+    --dark-border: #b0c4b8;
+    --base-fill: #dee8e1;
+    --regular-text-color: #3f524a;
+    --light-border-color: #cbdbd0;
+    --aside-right-border: 1px solid #cbdbd0;
+    --choose-account-background: #cbe9e0;
+    --email-scroll-content-color: rgba(24, 39, 33, 0.65);
+    --email-hover-background: #e4eee7;
+    --email-right-click-background: #d8e5dc;
+    --login-border: 1px solid #cbdbd0;
+    --form-desc-color: #6e827a;
+    --login-switch-color: #2e7c65;
+    --scrollbar-track-color: #b0c4b8;
+    --base-border-color: #cbdbd0;
+    --secondary-text-color: #6e827a;
+    --message-block-color: rgba(46, 124, 101, 0.05);
+
+    --shield-bg: rgba(46, 124, 101, 0.08);
+    --shield-border: rgba(46, 124, 101, 0.28);
+    --shield-text: #1f6350;
+    --shield-badge-bg: #e2efe9;
 }
 
 .el-input {

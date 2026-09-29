@@ -94,7 +94,9 @@ const route = useRoute();
   justify-content: center;
   gap: 5px;
   color: #ffffff;
-  background: linear-gradient(135deg, #1890ff, #3a80dd);
+  background: var(--el-color-primary);
+  box-shadow: 0 4px 14px -3px var(--el-color-primary);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   transition: all 0.3s ease;
   max-width: 240px;
   padding: 0 10px;
@@ -132,11 +134,13 @@ const route = useRoute();
   border-radius: 6px;
   height: 36px;
   padding: 10px !important;
+  transition: all 0.2s ease;
 }
 
 .choose-item {
-  font-weight: 400;
+  font-weight: 500;
   background: var(--aside-menu-active-background) !important;
+  border-left: 2px solid var(--el-color-primary) !important;
   backdrop-filter: blur(4px);
 }
 

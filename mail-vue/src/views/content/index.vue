@@ -34,8 +34,42 @@
             <el-alert v-if="email.status === 4" :closable="false" :title="$t('complained')" class="email-msg" type="warning" show-icon />
             <el-alert v-if="email.status === 5" :closable="false" :title="$t('delayed')" class="email-msg" type="warning" show-icon />
           </div>
+          <!-- 🛡️ 隐身安全防追踪横幅 -->
+          <div class="privacy-shield-bar" :class="{ 'is-secure': privacyAudit.isClean }">
+            <div class="shield-main">
+              <Icon class="shield-icon" :icon="privacyAudit.isClean ? 'solar:shield-check-bold-duotone' : 'solar:shield-warning-bold-duotone'" width="18" height="18" />
+              <div class="shield-text">
+                <span v-if="privacyAudit.beaconsCount > 0" class="shield-highlight">
+                  已拦截 {{ privacyAudit.beaconsCount }} 枚隐形追踪信标
+                </span>
+                <span v-if="privacyAudit.blockedImagesCount > 0">
+                  <span v-if="privacyAudit.beaconsCount > 0"> · </span>
+                  {{ privacyAudit.blockedImagesCount }} 张外链图片已沙箱隔离
+                </span>
+                <span v-if="privacyAudit.isClean">
+                  隐身保护生效中 · 未发现隐藏信标与追踪器
+                </span>
+              </div>
+            </div>
+            <div class="shield-actions" v-if="privacyAudit.blockedImagesCount > 0 && !allowImagesForCurrent">
+              <button class="shield-btn" @click="toggleLoadImages">
+                <Icon icon="solar:gallery-wide-linear" width="14" height="14" />
+                显示图片
+              </button>
+              <button class="shield-btn" @click="trustSender" v-if="email.sendEmail && !isSenderTrusted(email.sendEmail)">
+                <Icon icon="solar:user-check-rounded-linear" width="14" height="14" />
+                信任此发件人
+              </button>
+            </div>
+            <div class="shield-actions" v-else-if="allowImagesForCurrent && privacyAudit.blockedImagesCount > 0">
+              <span class="shield-loaded-tip">
+                <Icon icon="solar:check-circle-linear" width="14" height="14" />
+                已放行外链图片
+              </span>
+            </div>
+          </div>
           <el-scrollbar class="htm-scrollbar" :class="!email.attList?.length ? 'bottom-distance' : ''">
-            <ShadowHtml class="shadow-html" :html="formatImage(email.content)" v-if="email.content" />
+            <ShadowHtml class="shadow-html" :html="privacyAudit.safeHtml" v-if="email.content" />
             <pre v-else class="email-text" >{{email.text}}</pre>
           </el-scrollbar>
           <div class="att" v-if="email.attList?.length > 0">
@@ -92,6 +126,7 @@ import {allEmailDelete} from "@/request/all-email.js";
 import {useUiStore} from "@/store/ui.js";
 import {useI18n} from "vue-i18n";
 import {EmailUnreadEnum} from "@/enums/email-enum.js";
+import {inspectAndSanitizeHtml, isSenderTrusted, addTrustedSender} from "@/utils/privacy-shield.js";
 
 const uiStore = useUiStore();
 const settingStore = useSettingStore();
@@ -107,6 +142,34 @@ const email = computed(() => emailStore.contentData.email || {
 })
 const showPreview = ref(false)
 const srcList = reactive([])
+const allowImagesForCurrent = ref(false)
+
+const privacyAudit = computed(() => {
+  const raw = formatImage(email.value.content);
+  return inspectAndSanitizeHtml(raw, {
+    allowExternalImages: allowImagesForCurrent.value,
+    senderEmail: email.value.sendEmail
+  });
+});
+
+function toggleLoadImages() {
+  allowImagesForCurrent.value = true;
+}
+
+function trustSender() {
+  if (email.value.sendEmail) {
+    addTrustedSender(email.value.sendEmail);
+    allowImagesForCurrent.value = true;
+    ElMessage.success({
+      message: `已将 ${email.value.sendEmail} 设为信任发件人`,
+      plain: true
+    });
+  }
+}
+
+watch(() => email.value.emailId, () => {
+  allowImagesForCurrent.value = false;
+})
 
 const { t } = useI18n()
 watch(() => accountStore.currentAccountId, () => {
@@ -471,9 +534,76 @@ const handleDelete = () => {
   margin: 0;
 }
 
-.bottom-distance {
-  margin-bottom: 30px;
+.privacy-shield-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  background: var(--shield-bg, rgba(179, 136, 72, 0.08));
+  border: 1px solid var(--shield-border, rgba(179, 136, 72, 0.28));
+  color: var(--shield-text, #8d6220);
+  font-size: 12.5px;
+  transition: all 0.2s ease;
+
+  &.is-secure {
+    opacity: 0.85;
+  }
+
+  .shield-main {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    .shield-icon {
+      flex-shrink: 0;
+    }
+
+    .shield-text {
+      line-height: 1.4;
+
+      .shield-highlight {
+        font-weight: 600;
+      }
+    }
+  }
+
+  .shield-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    .shield-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--shield-border, rgba(179, 136, 72, 0.3));
+      background: var(--el-bg-color, #ffffff);
+      color: var(--shield-text, #8d6220);
+      cursor: pointer;
+      font-size: 11.5px;
+      font-weight: 500;
+      transition: all 0.15s ease;
+
+      &:hover {
+        background: var(--el-color-primary);
+        color: #ffffff;
+        border-color: var(--el-color-primary);
+      }
+    }
+
+    .shield-loaded-tip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11.5px;
+      opacity: 0.85;
+    }
+  }
 }
-
-
 </style>

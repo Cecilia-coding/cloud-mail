@@ -10,12 +10,30 @@
       </div>
     </div>
     <div class="toolbar">
-      <div v-if="uiStore.dark" class="sun-icon icon-item" @click="openDark($event)">
-        <Icon icon="mingcute:sun-fill"/>
-      </div>
-      <div v-else class="dark-icon icon-item" @click="openDark($event)">
-        <Icon icon="solar:moon-linear"/>
-      </div>
+      <el-dropdown trigger="click" @command="handleThemeCommand">
+        <div class="theme-switcher-pill icon-item" :title="'当前主题: ' + currentThemeLabel">
+          <Icon v-if="uiStore.currentTheme === 'obsidian'" icon="solar:moon-stars-bold-duotone" width="18" height="18" />
+          <Icon v-else-if="uiStore.currentTheme === 'celadon'" icon="solar:leaf-linear" width="18" height="18" />
+          <Icon v-else icon="solar:document-text-outline" width="18" height="18" />
+          <span class="theme-badge-text">{{ currentThemeShort }}</span>
+        </div>
+        <template #dropdown>
+          <el-dropdown-menu class="theme-select-dropdown">
+            <el-dropdown-item command="codex" :class="{ 'is-selected-theme': uiStore.currentTheme === 'codex' }">
+              <span class="theme-symbol codex-symbol">✦</span>
+              <span class="theme-name">羊皮手抄 (Muted Codex)</span>
+            </el-dropdown-item>
+            <el-dropdown-item command="obsidian" :class="{ 'is-selected-theme': uiStore.currentTheme === 'obsidian' }">
+              <span class="theme-symbol obsidian-symbol">❖</span>
+              <span class="theme-name">黑曜潜行 (Obsidian Stealth)</span>
+            </el-dropdown-item>
+            <el-dropdown-item command="celadon" :class="{ 'is-selected-theme': uiStore.currentTheme === 'celadon' }">
+              <span class="theme-symbol celadon-symbol">✧</span>
+              <span class="theme-name">冷玉青墨 (Celadon Emerald)</span>
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
       <div class="notice icon-item" @click="openNotice">
         <Icon icon="streamline-plump:announcement-megaphone"/>
       </div>
@@ -98,6 +116,22 @@ const userinfoRef = ref({})
 const accountCount = computed(() => {
   return userStore.user.role.accountCount
 })
+
+const currentThemeLabel = computed(() => {
+  if (uiStore.currentTheme === 'obsidian') return '黑曜潜行'
+  if (uiStore.currentTheme === 'celadon') return '冷玉青墨'
+  return '羊皮手抄'
+})
+
+const currentThemeShort = computed(() => {
+  if (uiStore.currentTheme === 'obsidian') return '黑曜'
+  if (uiStore.currentTheme === 'celadon') return '冷玉'
+  return '手抄'
+})
+
+function handleThemeCommand(theme) {
+  uiStore.setTheme(theme)
+}
 
 const sendType = computed(() => {
 
@@ -380,7 +414,8 @@ function formatName(email) {
     height: 34px;
     border-radius: 50%;
     color: #ffffff;
-    background: linear-gradient(135deg, #1890ff, #3a80dd);
+    background: var(--el-color-primary);
+    box-shadow: 0 2px 8px -1px var(--el-color-primary);
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
@@ -436,6 +471,32 @@ function formatName(email) {
   .notice {
     font-size: 22px;
     margin-right: 4px;
+  }
+
+  .theme-switcher-pill {
+    padding: 0 8px;
+    height: 30px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    border: 1px solid var(--el-border-color);
+    background: var(--light-ill);
+    color: var(--el-text-color-primary);
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--base-fill);
+      border-color: var(--el-color-primary);
+    }
+
+    .theme-badge-text {
+      font-size: 11px;
+      font-weight: 500;
+      opacity: 0.85;
+    }
   }
 
   .dark-icon {

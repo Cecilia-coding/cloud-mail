@@ -9,17 +9,23 @@
   <link rel="icon" href="/public/mail.png" type="image/png">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <script>
-    const uiStoreStr =  localStorage.getItem('ui')
-    let isDark = false
-    if (uiStoreStr) {
-      const uiStore =  JSON.parse(uiStoreStr)
-      isDark = uiStore.dark
-      const root = document.documentElement
-      root.setAttribute('class', isDark ? 'dark' : '');
-    }
+    let isDark = false;
+    let currentTheme = 'codex';
+    try {
+      const uiStoreStr = localStorage.getItem('ui');
+      if (uiStoreStr) {
+        const uiStore = JSON.parse(uiStoreStr);
+        currentTheme = uiStore.currentTheme || (uiStore.dark ? 'obsidian' : 'codex');
+        isDark = currentTheme === 'obsidian';
+      }
+    } catch (e) {}
+    const root = document.documentElement;
+    root.setAttribute('data-theme', currentTheme);
+    root.setAttribute('class', isDark ? 'dark' : '');
     const metaTag = document.getElementById('theme-color-meta');
-    const isMobile =  !window.matchMedia("(pointer: fine) and (hover: hover)").matches;
-    metaTag.setAttribute('content', isDark ? (isMobile ? '#141414' : '#000000') : (isMobile ? '#191A23' : '#F1F1F1'));
+    if (metaTag) {
+      metaTag.setAttribute('content', currentTheme === 'obsidian' ? '#121316' : (currentTheme === 'celadon' ? '#f3f6f4' : '#faf7f2'));
+    }
   </script>
 </head>
 <style>
