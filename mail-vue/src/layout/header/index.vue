@@ -2,11 +2,16 @@
   <div class="header" :class="!hasPerm('email:send') ? 'not-send' : ''">
     <div class="header-btn">
       <hanburger @click="changeAside"></hanburger>
-      <span class="breadcrumb-item">{{ $t(route.meta.title) }}</span>
+      <div class="breadcrumb-group">
+        <span class="breadcrumb-fleuron">✦</span>
+        <span class="breadcrumb-item">{{ $t(route.meta.title) }}</span>
+        <span class="breadcrumb-sub">Secretum Epistolae</span>
+      </div>
     </div>
     <div v-perm="'email:send'" class="writer-box" @click="openSend">
       <div class="writer">
-        <Icon icon="material-symbols:edit-outline-sharp" width="22" height="22"/>
+        <Icon icon="material-symbols:edit-outline-sharp" width="16" height="16"/>
+        <span class="writer-text">撰寫新函</span>
       </div>
     </div>
     <div class="toolbar">
@@ -410,21 +415,30 @@ function formatName(email) {
   margin-left: 5px;
 
   .writer {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
+    padding: 0 14px;
+    height: 32px;
+    border-radius: 20px;
     color: #ffffff;
     background: var(--el-color-primary);
-    box-shadow: 0 2px 8px -1px var(--el-color-primary);
-    transition: all 0.3s ease;
-    display: flex;
+    box-shadow: 0 2px 10px -2px var(--el-color-primary);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
+    gap: 6px;
+    font-family: var(--font-mincho);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px -1px var(--el-color-primary);
+    }
 
     .writer-text {
-      margin-left: 15px;
-      font-size: 14px;
-      font-weight: bold;;
+      margin-left: 2px;
+      font-size: 12.5px;
+      font-weight: 500;
     }
   }
 }
@@ -434,15 +448,37 @@ function formatName(email) {
   align-items: center;
   height: 100%;
   min-width: 0;
-}
 
-.breadcrumb-item {
-  font-weight: bold;
-  font-size: 14px;
-  color: var(--el-text-color-primary);
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  .breadcrumb-group {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-left: 8px;
+
+    .breadcrumb-fleuron {
+      font-size: 12px;
+      color: var(--el-color-primary);
+    }
+
+    .breadcrumb-item {
+      font-family: var(--font-mincho);
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--el-text-color-primary);
+    }
+
+    .breadcrumb-sub {
+      font-family: var(--font-serif-italic);
+      font-style: italic;
+      font-size: 12px;
+      color: var(--el-text-color-secondary);
+      letter-spacing: 0.05em;
+      @media (max-width: 768px) {
+        display: none;
+      }
+    }
+  }
 }
 
 .toolbar {

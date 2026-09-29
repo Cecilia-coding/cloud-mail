@@ -27,10 +27,22 @@ html, body {
 }
 
 body {
-    font-family: Inter, "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
-    line-height: 1.5;
+    font-family: var(--font-sans);
+    line-height: 1.7;
     color: var(--el-text-color-primary);
     font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, .mincho-title {
+    font-family: var(--font-mincho);
+    letter-spacing: 0.08em;
+}
+
+.serif-italic {
+    font-family: var(--font-serif-italic);
+    font-style: italic;
 }
 
 html, body {
@@ -105,6 +117,13 @@ button, input, select, textarea {
     max-height: 220px !important;
 }
 
+:root {
+    --font-mincho: "Huiwen-mincho", "Noto Serif SC", "Source Han Serif CN", "Songti SC", "SimSun", serif;
+    --font-serif-italic: "Cormorant Garamond", "Cinzel", "Georgia", serif;
+    --font-sans: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    --font-mono: "JetBrains Mono", Consolas, Monaco, monospace;
+}
+
 :root,
 :root[data-theme="codex"] {
     --el-color-primary: #8a486b;
@@ -115,41 +134,48 @@ button, input, select, textarea {
     --el-color-primary-light-8: #f0dbe7;
     --el-color-primary-light-9: #f9edf4;
 
-    --el-bg-color: #faf7f2;
+    --el-bg-color: #f7f4fa;
     --el-bg-color-overlay: #ffffff;
     --el-text-color-primary: #2b2338;
-    --el-text-color-regular: #554d60;
-    --el-text-color-secondary: #877e92;
-    --el-text-color-placeholder: #b5acbe;
-    --el-border-color: #dfd7e4;
-    --el-border-color-light: #ece5ef;
-    --el-border-color-lighter: #f4eef6;
+    --el-text-color-regular: #635773;
+    --el-text-color-secondary: #9589a3;
+    --el-text-color-placeholder: #b8adcb;
+    --el-border-color: #dcd0e4;
+    --el-border-color-light: #ece4f2;
+    --el-border-color-lighter: #f4eef8;
 
-    --extra-light-fill: #faf7f2;
-    --settings-page-background: #f7f3ee;
-    --light-ill: #f4eee8;
-    --light-border: #dfd7e4;
-    --header-actions-border: inset 0 -1px 0 0 #dfd7e4;
-    --aside-backgound: #231d2a;
-    --aside-menu-active-background: rgba(186, 150, 196, 0.16);
-    --loadding-background: rgba(250, 247, 242, 0.85);
-    --dark-border: #c6b9cd;
-    --base-fill: #f2eae2;
-    --regular-text-color: #554d60;
-    --light-border-color: #dfd7e4;
-    --aside-right-border: 1px solid #dfd7e4;
+    --card-bg: #ffffff;
+    --card-border: #dcd0e4;
+    --card-shadow: 0 2px 10px rgba(43, 35, 56, 0.04);
+    --card-hover-shadow: 0 6px 20px rgba(138, 72, 107, 0.08);
+
+    --extra-light-fill: #f7f4fa;
+    --settings-page-background: #f7f4fa;
+    --light-ill: #f3edf8;
+    --light-border: #dcd0e4;
+    --header-actions-border: inset 0 -1px 0 0 #dcd0e4;
+    --aside-backgound: #f2eaf7;
+    --aside-text-color: #2b2338;
+    --aside-menu-active-background: rgba(138, 72, 107, 0.12);
+    --aside-brand-bg: rgba(138, 72, 107, 0.06);
+    --loadding-background: rgba(247, 244, 250, 0.88);
+    --dark-border: #c6b5d2;
+    --base-fill: #eee5f5;
+    --regular-text-color: #635773;
+    --light-border-color: #dcd0e4;
+    --aside-right-border: 1px solid #dcd0e4;
     --choose-account-background: #f0dbe7;
     --el-text-color-regular: var(--el-text-color-primary);
     --email-scroll-content-color: rgba(43, 35, 56, 0.65);
-    --email-hover-background: #f2ece4;
+    --email-hover-background: #faf7fd;
     --email-right-click-background: #ede3d8;
-    --login-border: 1px solid #dfd7e4;
-    --form-desc-color: #877e92;
+    --login-border: 1px solid #dcd0e4;
+    --form-desc-color: #9589a3;
     --login-switch-color: #8a486b;
-    --scrollbar-track-color: #d6ccdc;
-    --base-border-color: #dfd7e4;
-    --secondary-text-color: #877e92;
-    --message-block-color: rgba(138, 72, 107, 0.05);
+    --scrollbar-track-color: #dcd0e4;
+    --base-border-color: #dcd0e4;
+    --secondary-text-color: #9589a3;
+    --message-block-color: rgba(138, 72, 107, 0.04);
 
     --shield-bg: rgba(179, 136, 72, 0.08);
     --shield-border: rgba(179, 136, 72, 0.28);

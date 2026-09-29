@@ -32,7 +32,7 @@ function updateContent() {
   const cleanedHtml = props.html.replace(/<\/?body[^>]*>/gi, '');
 
   const isDark = uiStore.dark;
-  const defaultBg = uiStore.currentTheme === 'obsidian' ? '#16181f' : (uiStore.currentTheme === 'celadon' ? '#f3f6f4' : '#faf7f2');
+  const defaultBg = uiStore.currentTheme === 'obsidian' ? '#16181f' : (uiStore.currentTheme === 'celadon' ? '#f3f6f4' : '#ffffff');
   const defaultColor = uiStore.currentTheme === 'obsidian' ? '#e4e7ed' : (uiStore.currentTheme === 'celadon' ? '#182721' : '#2b2338');
   const primaryColor = uiStore.currentTheme === 'obsidian' ? '#3ecf8e' : (uiStore.currentTheme === 'celadon' ? '#2e7c65' : '#8a486b');
 

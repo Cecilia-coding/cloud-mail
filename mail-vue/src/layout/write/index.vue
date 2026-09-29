@@ -628,13 +628,13 @@ function close() {
   justify-content: center;
 
   .write-box {
-    background: var(--el-bg-color);
+    background: var(--card-bg, #ffffff);
     width: min(1367px, calc(100% - 80px));
-    box-shadow: var(--el-box-shadow-light);
-    border: 1px solid var(--el-border-color-light);
+    box-shadow: 0 16px 48px rgba(43, 35, 56, 0.16);
+    border: 1px solid var(--el-border-color);
     transition: var(--el-transition-duration);
-    padding: 15px;
-    border-radius: 8px;
+    padding: 18px 24px;
+    border-radius: 12px;
     display: grid;
     grid-template-rows: auto 1fr;
     overflow: hidden;
@@ -643,7 +643,7 @@ function close() {
       height: 100%;
       border-radius: 0;
       border: 0;
-      padding-top: 10px;
+      padding: 12px 14px;
     }
 
     @media (min-width: 1025px) {
@@ -653,29 +653,38 @@ function close() {
     .title {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 10px;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--el-border-color-lighter);
 
       .title-left {
         align-items: center;
-        display: grid;
-        grid-template-columns: auto auto auto 1fr;
+        display: flex;
+        gap: 8px;
+        font-family: var(--font-mincho);
       }
 
       .title-text {
+        color: var(--el-color-primary);
+        display: flex;
+        align-items: center;
       }
 
       .sender {
-        margin-left: 8px;
+        font-size: 13px;
+        letter-spacing: 0.05em;
+        color: var(--el-text-color-secondary);
       }
 
       .sender-name {
-        margin-left: 8px;
-        font-weight: bold;
+        font-weight: 600;
+        color: var(--el-text-color-primary);
       }
 
       .send-email {
-        color: #999896;
-        margin-left: 5px;
+        font-family: var(--font-serif-italic);
+        font-style: italic;
+        color: var(--el-text-color-secondary);
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;

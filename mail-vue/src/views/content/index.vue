@@ -1,7 +1,11 @@
 <template>
   <div class="box">
     <div class="header-actions">
-      <Icon class="icon" icon="material-symbols-light:arrow-back-ios-new" width="20" height="20" @click="handleBack"/>
+      <div class="back-link" @click="handleBack">
+        <Icon icon="material-symbols-light:arrow-back-ios-new" width="16" height="16"/>
+        <span>返回清單</span>
+      </div>
+      <div class="action-divider"></div>
       <Icon v-perm="'email:delete'" class="icon" icon="uiw:delete" width="16" height="16" @click="handleDelete"/>
       <span class="star" v-if="emailStore.contentData.showStar">
         <Icon class="icon" @click="changeStar" v-if="email.isStar" icon="fluent-color:star-16" width="20" height="20"/>
@@ -12,7 +16,12 @@
     </div>
     <div></div>
     <el-scrollbar class="scrollbar">
-      <div class="container">
+      <div class="container codex-epistle-card">
+        <div class="epistle-crest">
+          <span class="crest-line"></span>
+          <span class="crest-symbol">✦ 函牘抄件 · EPISTLE DOSSIER ✦</span>
+          <span class="crest-line"></span>
+        </div>
         <div class="email-title">
           {{ email.subject }}
         </div>
@@ -22,7 +31,7 @@
               <div class="send"><span class="send-source">{{$t('from')}}</span>
                 <div class="send-name">
                   <span class="send-name-title">{{ email.name }}</span>
-                  <span><{{ email.sendEmail }}></span>
+                  <span class="send-email-text"><{{ email.sendEmail }}></span>
                 </div>
               </div>
               <div class="receive"><span class="source">{{$t('recipient')}}</span><span class="receive-email">{{  formateReceive(email.recipient) }}</span></div>
@@ -335,23 +344,57 @@ const handleDelete = () => {
 }
 
 .header-actions {
-  padding: 9px 15px 8px;
+  padding: 8px 18px;
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
   box-shadow: var(--header-actions-border);
-  font-size: 18px;
+  background: var(--el-bg-color);
+  font-size: 16px;
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 13.5px;
+    font-family: var(--font-mincho);
+    letter-spacing: 0.06em;
+    color: var(--el-text-color-primary);
+    padding: 3px 8px;
+    border-radius: 4px;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+    &:hover {
+      background: var(--el-fill-color-light);
+      color: var(--el-color-primary);
+    }
+  }
+
+  .action-divider {
+    width: 1px;
+    height: 14px;
+    background: var(--el-border-color);
+  }
+
   .star {
     display: flex;
     align-items: center;
     justify-content: center;
     min-width: 21px;
   }
+
   .icon {
     cursor: pointer;
+    color: var(--el-text-color-regular);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+    &:hover {
+      color: var(--el-color-primary);
+      transform: scale(1.1);
+    }
   }
 }
-
 
 .scrollbar {
   height: calc(100% - 38px);
@@ -360,18 +403,53 @@ const handleDelete = () => {
 
 .container {
   font-size: 14px;
-  padding-left: 20px;
-  padding-right: 20px;
-  padding-top: 10px;
+  max-width: 960px;
+  margin: 16px auto 30px;
+  padding: 24px 32px 32px;
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--el-border-color);
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(43, 35, 56, 0.04);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
   @media (max-width: 1023px) {
-    padding-left: 15px;
-    padding-right: 15px;
+    margin: 8px 10px 20px;
+    padding: 16px 18px 24px;
+    border-radius: 6px;
+  }
+
+  .epistle-crest {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    opacity: 0.75;
+
+    .crest-line {
+      height: 1px;
+      flex: 1;
+      max-width: 60px;
+      background: linear-gradient(90deg, transparent, var(--el-border-color), transparent);
+    }
+
+    .crest-symbol {
+      font-family: var(--font-serif-italic);
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      color: var(--el-color-primary);
+    }
   }
 
   .email-title {
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 10px;
+    font-family: var(--font-mincho);
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.5;
+    letter-spacing: 0.06em;
+    color: var(--el-text-color-primary);
+    margin-bottom: 14px;
+    word-break: break-word;
   }
 
   .htm-scrollbar {
@@ -456,16 +534,23 @@ const handleDelete = () => {
     }
 
     .email-info {
-
-      border-bottom: 1px solid var(--light-border-color);
+      border: 1px solid var(--el-border-color-lighter);
+      background: rgba(138, 72, 107, 0.025);
+      border-radius: 8px;
+      padding: 14px 18px;
       margin-bottom: 20px;
-      padding-bottom: 8px;
+
       @media (max-width: 1024px) {
-        margin-bottom: 15px;
+        padding: 10px 14px;
+        margin-bottom: 14px;
       }
+
       .date {
-        color: var(--regular-text-color);
-        margin-bottom: 6px;
+        font-family: var(--font-serif-italic);
+        font-style: italic;
+        font-size: 13px;
+        color: var(--el-text-color-secondary);
+        margin-top: 6px;
       }
 
       .email-msg {
@@ -476,41 +561,61 @@ const handleDelete = () => {
 
       .send {
         display: flex;
+        align-items: baseline;
         margin-bottom: 6px;
 
-        .send-name {
-          color: var(--regular-text-color);
-          display: flex;
-          flex-wrap: wrap;
+        .send-source {
+          font-family: var(--font-mincho);
+          font-size: 12px;
+          letter-spacing: 0.08em;
+          color: var(--el-color-primary);
+          font-weight: 600;
+          white-space: nowrap;
+          padding-right: 12px;
         }
 
-        .send-name-title {
-          padding-right: 5px;
+        .send-name {
+          color: var(--el-text-color-primary);
+          display: flex;
+          align-items: baseline;
+          flex-wrap: wrap;
+          gap: 6px;
+
+          .send-name-title {
+            font-weight: 600;
+          }
+
+          .send-email-text {
+            font-family: var(--font-serif-italic);
+            font-style: italic;
+            color: var(--el-text-color-secondary);
+            font-size: 13.5px;
+          }
         }
       }
 
       .receive {
-        margin-bottom: 6px;
         display: flex;
+        align-items: baseline;
+        margin-bottom: 6px;
+
+        .source {
+          font-family: var(--font-mincho);
+          font-size: 12px;
+          letter-spacing: 0.08em;
+          color: var(--el-text-color-secondary);
+          font-weight: 600;
+          white-space: nowrap;
+          padding-right: 12px;
+        }
+
         .receive-email {
           max-width: 700px;
           word-break: break-word;
+          font-family: var(--font-serif-italic);
+          font-style: italic;
+          color: var(--el-text-color-regular);
         }
-        span:nth-child(2) {
-          color: var(--regular-text-color);
-        }
-      }
-
-      .send-source {
-        white-space: nowrap;
-        font-weight: bold;
-        padding-right: 10px;
-      }
-
-      .source {
-        white-space: nowrap;
-        font-weight: bold;
-        padding-right: 10px;
       }
     }
   }

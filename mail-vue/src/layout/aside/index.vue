@@ -1,11 +1,12 @@
 <template>
   <el-scrollbar class="scroll">
     <div>
-      <div class="title" >
-        <Icon icon="mdi:email-outline" width="24" height="24" />
-        <div>{{settingStore.settings.title}}</div>
+      <div class="aside-brand">
+        <div class="brand-crest">❖</div>
+        <div class="brand-title">{{settingStore.settings.title || '雲端密匣'}}</div>
+        <div class="brand-sub">The Codex Archive</div>
       </div>
-      <el-menu :collapse="false" text-color="#fff" active-text-color="#fff" style="margin-top: 10px">
+      <el-menu :collapse="false" text-color="var(--aside-text-color, var(--el-text-color-primary))" active-text-color="var(--el-color-primary)" style="margin-top: 10px">
         <el-menu-item @click="router.push({name: 'email'})" index="email"
                       :class="route.meta.name === 'email' ? 'choose-item' : ''">
           <Icon icon="hugeicons:mailbox-01" width="20" height="20" />
@@ -32,7 +33,7 @@
           <span class="menu-name" style="margin-left: 16px">{{$t('settings')}}</span>
         </el-menu-item>
         <div class="manage-title" v-perm="['all-email:query','user:query','role:query','setting:query','analysis:query','reg-key:query']">
-          <div>{{$t('manage')}}</div>
+          <div>✦ {{$t('manage')}} ✦</div>
         </div>
         <el-menu-item @click="router.push({name: 'analysis'})" index="analysis" v-perm="'analysis:query'"
                       :class="route.meta.name === 'analysis' ? 'choose-item' : ''">
@@ -82,51 +83,51 @@ const route = useRoute();
 
 <style lang="scss" scoped>
 
-.title {
-  margin: 15px 10px;
-  height: 45px;
-  border-radius: 6px;
-  display: flex;
+.aside-brand {
+  margin: 16px 14px 10px;
+  padding: 12px 10px;
+  border-radius: 8px;
+  text-align: center;
+  background: var(--aside-brand-bg, rgba(138, 72, 107, 0.06));
+  border: 1px solid var(--el-border-color);
   position: relative;
-  font-size: 16px;
-  font-weight: bold;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  color: #ffffff;
-  background: var(--el-color-primary);
-  box-shadow: 0 4px 14px -3px var(--el-color-primary);
-  border: 1px solid rgba(255, 255, 255, 0.15);
   transition: all 0.3s ease;
-  max-width: 240px;
-  padding: 0 10px;
-  > div {
-    overflow: hidden;
+
+  .brand-crest {
+    font-size: 13px;
+    color: var(--el-color-primary);
+    margin-bottom: 2px;
+  }
+
+  .brand-title {
+    font-family: var(--font-mincho);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: var(--el-text-color-primary);
     white-space: nowrap;
+    overflow: hidden;
     text-overflow: ellipsis;
-    max-width: calc(240px - 20px - 30px);
   }
 
-  :deep(.el-icon) {
-    flex-shrink: 0;
-    font-size: 20px;
+  .brand-sub {
+    font-family: var(--font-serif-italic);
+    font-style: italic;
+    font-size: 11px;
+    color: var(--el-text-color-secondary);
+    letter-spacing: 0.06em;
+    margin-top: 2px;
   }
-
-  .user-right-icon {
-    align-self: center;
-    position: absolute;
-    font-size: 12px;
-    right: 8px;
-    color: #ffffff;
-  }
-
 }
 
-
 .manage-title {
-  margin-top: 10px;
+  margin-top: 14px;
+  margin-bottom: 4px;
   padding-left: 20px;
-  color: #fff;
+  font-family: var(--font-mincho);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--el-text-color-secondary);
 }
 
 .el-menu-item {
@@ -134,19 +135,23 @@ const route = useRoute();
   border-radius: 6px;
   height: 36px;
   padding: 10px !important;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: var(--font-mincho);
+  letter-spacing: 0.04em;
 }
 
 .choose-item {
-  font-weight: 500;
+  font-weight: 600;
   background: var(--aside-menu-active-background) !important;
+  color: var(--el-color-primary) !important;
   border-left: 2px solid var(--el-color-primary) !important;
   backdrop-filter: blur(4px);
 }
 
 @media (hover: hover) {
   .el-menu-item:hover {
-    background: rgba(255, 255, 255, 0.08) !important;
+    background: var(--aside-menu-active-background) !important;
+    color: var(--el-color-primary) !important;
   }
 }
 
@@ -154,13 +159,13 @@ const route = useRoute();
   user-select: none;
 }
 
-
 :deep(.el-scrollbar__wrap--hidden-default ) {
   background: var(--aside-backgound) !important;
 }
 
 :deep(.el-menu-item) {
   background: var(--aside-backgound);
+  color: var(--aside-text-color, var(--el-text-color-primary));
 }
 
 :deep(.el-menu) {
@@ -174,7 +179,7 @@ const route = useRoute();
 
 :deep(.el-divider__text) {
   background: var(--aside-backgound);
-  color: #FFFFFF;
+  color: var(--el-text-color-primary);
 }
 
 .scroll {

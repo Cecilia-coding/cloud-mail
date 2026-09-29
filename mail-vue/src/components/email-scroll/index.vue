@@ -38,7 +38,7 @@
                         :key="keyCount"
         >
           <template #default="{ data: item, index }" >
-            <div :class="['email-row', props.type, { 'right-checked': item.rightChecked }]"
+            <div :class="['email-row', props.type, { 'right-checked': item.rightChecked, 'is-unread': (item.unread === EmailUnreadEnum.UNREAD && showUnread) }]"
                  :data-checked="item.checked"
                  @click="jumpDetails(item)"
                  v-if="!item.expand"
@@ -398,9 +398,9 @@ const list = computed(() => {
 
 const itemHeight = computed(() => {
     if (props.type === 'all-email') {
-      return isMobile.value ? 132 : 65;
+      return isMobile.value ? 140 : 74;
     } else  {
-      return isMobile.value ? 83 : 48;
+      return isMobile.value ? 96 : 64;
     }
 })
 
@@ -970,16 +970,23 @@ function loadData() {
 
 :deep(.email-row) {
   display: flex;
-  padding: 8px 0;
+  margin: 4px 14px;
+  height: 56px;
+  padding: 6px 14px;
   justify-content: space-between;
-  box-shadow: var(--header-actions-border);
+  border: 1px solid var(--el-border-color);
+  border-radius: 8px;
+  background: var(--card-bg, #ffffff);
+  box-shadow: var(--card-shadow, 0 1px 4px rgba(43, 35, 56, 0.03));
   cursor: pointer;
   align-items: center;
   position: relative;
-  transition: background 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-  height: 48px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
   @media (max-width: 1366px) {
-    height: 83px;
+    height: 88px;
+    margin: 4px 10px;
+    padding: 8px 10px;
   }
 
   @media (pointer: coarse) {
@@ -987,10 +994,26 @@ function loadData() {
     user-select: none;
   }
   &.all-email {
-    height: 65px;
+    height: 66px;
     @media (max-width: 1366px) {
       height: 132px;
     }
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--card-hover-shadow, 0 6px 20px rgba(138, 72, 107, 0.08));
+    border-color: var(--el-color-primary);
+    z-index: 2;
+  }
+
+  &.is-unread {
+    border-left: 3px solid var(--el-color-primary) !important;
+  }
+
+  &.right-checked,
+  &.right-checked:hover {
+    background-color: var(--email-right-click-background);
   }
   .user-info {
     display: flex;
@@ -1180,6 +1203,9 @@ function loadData() {
       }
 
       .subject-text {
+        font-family: var(--font-mincho);
+        font-size: 15px;
+        letter-spacing: 0.04em;
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
@@ -1272,8 +1298,9 @@ function loadData() {
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 15px;
-  padding: 3px 15px;
+  padding: 8px 16px;
   box-shadow: var(--header-actions-border);
+  background: var(--el-bg-color);
 
   .header-left {
     display: flex;
@@ -1283,25 +1310,33 @@ function loadData() {
     column-gap: 20px;
     row-gap: 8px;
     padding-left: 2px;
-    color: var(--el-text-color-primary);;
+    color: var(--el-text-color-primary);
   }
 
   .header-right {
-    display: grid;
-    grid-template-columns: auto auto;
-    align-items: start;
-    height: 100%;
-    color: var(--el-text-color-primary);;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--el-text-color-primary);
 
     .email-count {
-      white-space: nowrap;
-      margin-top: 6px;
+      font-family: var(--font-serif-italic);
+      font-style: italic;
+      font-size: 13px;
+      color: var(--el-text-color-secondary);
+      letter-spacing: 0.05em;
     }
   }
 
   .icon {
     font-size: 18px;
     cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+
+    &:hover {
+      color: var(--el-color-primary);
+      transform: scale(1.08);
+    }
   }
 
   .more-icon {

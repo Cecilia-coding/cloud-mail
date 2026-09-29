@@ -1,16 +1,44 @@
 <template>
   <div id="login-box" :style=" background ? 'background: var(--el-bg-color)' : ''" v-loading="oauthLoading" element-loading-text="登录中...">
     <div id="background-wrap" v-if="!settingStore.settings.background">
-      <div class="x1 cloud"></div>
-      <div class="x2 cloud"></div>
-      <div class="x3 cloud"></div>
-      <div class="x4 cloud"></div>
-      <div class="x5 cloud"></div>
+      <div class="astrolabe-viewport">
+        <div class="astrolabe-container">
+          <div class="astro-ring ring-outer">
+            <span class="astro-deg deg-0">N 0°</span>
+            <span class="astro-deg deg-90">E 90°</span>
+            <span class="astro-deg deg-180">S 180°</span>
+            <span class="astro-deg deg-270">W 270°</span>
+          </div>
+          <div class="astro-ring ring-zodiac">
+            <span class="zodiac-glyph z1">✦</span>
+            <span class="zodiac-glyph z2">❖</span>
+            <span class="zodiac-glyph z3">✧</span>
+            <span class="zodiac-glyph z4">✦</span>
+            <span class="zodiac-glyph z5">❖</span>
+            <span class="zodiac-glyph z6">✧</span>
+            <span class="zodiac-glyph z7">✦</span>
+            <span class="zodiac-glyph z8">❖</span>
+          </div>
+          <div class="astro-ring ring-inner"></div>
+          <div class="astro-axis axis-cross"></div>
+          <div class="astro-axis axis-diag"></div>
+          <div class="astro-core">
+            <div class="core-fleuron">✦</div>
+            <div class="core-title">HOROLOGIUM CELESTE</div>
+            <div class="core-motto">Veritas in Silentio · Ad Astra</div>
+          </div>
+        </div>
+      </div>
     </div>
     <div v-else :style="background"></div>
     <div class="form-wrapper">
       <div class="container">
-        <span class="form-title">{{ settingStore.settings.title }}</span>
+        <div class="codex-login-crest">
+          <span class="crest-line"></span>
+          <span class="crest-fleuron">✦ ❖ ✦</span>
+          <span class="crest-line"></span>
+        </div>
+        <span class="form-title">{{ settingStore.settings.title || '雲端密匣' }}</span>
         <span class="form-desc" v-if="show === 'login'">{{ $t('loginTitle') }}</span>
         <span class="form-desc" v-else>{{ $t('regTitle') }}</span>
         <div v-show="show === 'login'">
@@ -646,55 +674,103 @@ function submitRegister() {
 }
 
 .container {
-  background: v-bind(loginOpacity);
-  padding-left: 40px;
-  padding-right: 40px;
+  background: var(--card-bg, #ffffff);
+  padding: 44px 40px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   width: 450px;
   height: 100%;
-  border-left: 1px solid var(--login-border);
-  box-shadow: var(--el-box-shadow-light);
+  border-left: 1px solid var(--el-border-color);
+  box-shadow: -8px 0 32px rgba(43, 35, 56, 0.04);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   @media (max-width: 1024px) {
-    padding: 20px 18px;
+    padding: 24px 20px;
     width: 384px;
-    margin-left: 18px;
   }
   @media (max-width: 767px) {
-    border: 1px solid var(--login-border);
-    padding: 20px 18px;
-    border-radius: 6px;
+    border: 1px solid var(--el-border-color);
+    padding: 28px 22px;
+    border-radius: 12px;
     height: fit-content;
-    width: 100%;
-    margin-right: 18px;
-    margin-left: 18px;
+    width: calc(100% - 32px);
+    margin: 16px auto;
+    box-shadow: 0 8px 32px rgba(43, 35, 56, 0.08);
+  }
+
+  .codex-login-crest {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    opacity: 0.8;
+
+    .crest-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--el-border-color), transparent);
+    }
+
+    .crest-fleuron {
+      font-size: 13px;
+      color: var(--el-color-primary);
+      letter-spacing: 0.2em;
+    }
   }
 
   .btn {
-    height: 36px;
+    height: 40px;
     width: 100%;
     border-radius: 6px;
+    font-family: var(--font-mincho);
+    font-size: 14.5px;
+    letter-spacing: 0.12em;
+    font-weight: 600;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(138, 72, 107, 0.3);
+    }
   }
 
   .form-desc {
-    margin-top: 5px;
-    margin-bottom: 18px;
-    color: var(--form-desc-color);
+    font-family: var(--font-serif-italic);
+    font-style: italic;
+    font-size: 13.5px;
+    letter-spacing: 0.05em;
+    text-align: center;
+    margin-top: 6px;
+    margin-bottom: 24px;
+    color: var(--el-text-color-secondary);
+    display: block;
   }
 
   .form-title {
-    font-weight: bold;
-    font-size: 22px !important;
+    font-family: var(--font-mincho);
+    font-weight: 600;
+    font-size: 24px !important;
+    letter-spacing: 0.12em;
+    color: var(--el-text-color-primary);
+    text-align: center;
+    display: block;
   }
 
   .switch {
-    margin-top: 20px;
+    margin-top: 22px;
     text-align: center;
+    font-size: 13px;
+    color: var(--el-text-color-secondary);
 
     span {
-      color: var(--login-switch-color);
+      color: var(--el-color-primary);
       cursor: pointer;
+      font-weight: 600;
+      margin-left: 4px;
+
+      &:hover {
+        text-decoration: underline;
+      }
     }
   }
 
@@ -796,88 +872,217 @@ function submitRegister() {
 
 
 #login-box {
-  background: linear-gradient(to bottom, #2980b9, #6dd5fa, #fff);
-  font: 100% Arial, sans-serif;
+  background:
+    radial-gradient(circle at 25% 35%, rgba(138, 72, 107, 0.09) 0%, transparent 50%),
+    radial-gradient(circle at 75% 70%, rgba(179, 136, 72, 0.08) 0%, transparent 45%),
+    var(--el-bg-color, #f7f4fa);
+  font-family: var(--font-sans);
   height: 100%;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
   display: grid;
   grid-template-columns: 1fr;
+  position: relative;
 }
-
 
 #background-wrap {
   height: 100%;
   z-index: 0;
-}
-
-@keyframes animateCloud {
-  0% {
-    margin-left: -500px;
-  }
-
-  100% {
-    margin-left: 100%;
-  }
-}
-
-.x1 {
-  animation: animateCloud 30s linear infinite;
-  transform: scale(0.65);
-}
-
-.x2 {
-  animation: animateCloud 15s linear infinite;
-  transform: scale(0.3);
-}
-
-.x3 {
-  animation: animateCloud 25s linear infinite;
-  transform: scale(0.5);
-}
-
-.x4 {
-  animation: animateCloud 13s linear infinite;
-  transform: scale(0.4);
-}
-
-.x5 {
-  animation: animateCloud 20s linear infinite;
-  transform: scale(0.55);
-}
-
-.cloud {
-  background: linear-gradient(to bottom, #fff 5%, #f1f1f1 100%);
-  border-radius: 100px;
-  box-shadow: 0 8px 5px rgba(0, 0, 0, 0.1);
-  height: 120px;
-  width: 350px;
   position: relative;
 }
 
-.cloud:after,
-.cloud:before {
-  content: "";
+.astrolabe-viewport {
   position: absolute;
-  background: #fff;
-  z-index: -1;
+  top: 0;
+  left: 0;
+  width: calc(100% - 450px);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  overflow: hidden;
+
+  @media (max-width: 1024px) {
+    width: 100%;
+    opacity: 0.22;
+  }
 }
 
-.cloud:after {
-  border-radius: 100px;
-  height: 100px;
-  left: 50px;
-  top: -50px;
-  width: 100px;
+.astrolabe-container {
+  position: relative;
+  width: 580px;
+  height: 580px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: astrolabeFloat 9s ease-in-out infinite alternate;
 }
 
-.cloud:before {
-  border-radius: 200px;
-  height: 180px;
-  width: 180px;
-  right: 50px;
-  top: -90px;
+@keyframes astrolabeFloat {
+  0% { transform: translateY(-8px) scale(0.98); }
+  100% { transform: translateY(8px) scale(1.02); }
+}
+
+.astro-ring {
+  position: absolute;
+  border-radius: 50%;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ring-outer {
+  width: 560px;
+  height: 560px;
+  border: 1px solid rgba(179, 136, 72, 0.35);
+  box-shadow: 0 0 50px rgba(179, 136, 72, 0.05), inset 0 0 40px rgba(138, 72, 107, 0.04);
+  animation: rotateOuter 160s linear infinite;
+
+  .astro-deg {
+    position: absolute;
+    font-family: var(--font-serif-italic);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: rgba(179, 136, 72, 0.7);
+
+    &.deg-0 { top: 8px; left: 50%; transform: translateX(-50%); }
+    &.deg-90 { right: 8px; top: 50%; transform: translateY(-50%); }
+    &.deg-180 { bottom: 8px; left: 50%; transform: translateX(-50%); }
+    &.deg-270 { left: 8px; top: 50%; transform: translateY(-50%); }
+  }
+}
+
+.ring-zodiac {
+  width: 420px;
+  height: 420px;
+  border: 1px dashed rgba(138, 72, 107, 0.4);
+  animation: rotateInner 110s linear infinite reverse;
+
+  .zodiac-glyph {
+    position: absolute;
+    font-size: 13px;
+    color: rgba(138, 72, 107, 0.65);
+
+    &.z1 { top: 8px; left: 50%; transform: translateX(-50%); }
+    &.z2 { top: 16%; right: 16%; }
+    &.z3 { right: 8px; top: 50%; transform: translateY(-50%); }
+    &.z4 { bottom: 16%; right: 16%; }
+    &.z5 { bottom: 8px; left: 50%; transform: translateX(-50%); }
+    &.z6 { bottom: 16%; left: 16%; }
+    &.z7 { left: 8px; top: 50%; transform: translateY(-50%); }
+    &.z8 { top: 16%; left: 16%; }
+  }
+}
+
+.ring-inner {
+  width: 280px;
+  height: 280px;
+  border: 1px solid rgba(179, 136, 72, 0.28);
+  animation: rotateOuter 80s linear infinite;
+}
+
+.astro-axis {
+  position: absolute;
+  border: none;
+  pointer-events: none;
+
+  &.axis-cross {
+    width: 520px;
+    height: 520px;
+    &::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(179, 136, 72, 0.25), transparent);
+    }
+    &::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: linear-gradient(180deg, transparent, rgba(179, 136, 72, 0.25), transparent);
+    }
+  }
+
+  &.axis-diag {
+    width: 380px;
+    height: 380px;
+    transform: rotate(45deg);
+    &::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(138, 72, 107, 0.2), transparent);
+    }
+    &::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: linear-gradient(180deg, transparent, rgba(138, 72, 107, 0.2), transparent);
+    }
+  }
+}
+
+.astro-core {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 16px;
+  background: rgba(247, 244, 250, 0.75);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(179, 136, 72, 0.35);
+  border-radius: 50%;
+  width: 170px;
+  height: 170px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 24px rgba(43, 35, 56, 0.06);
+
+  .core-fleuron {
+    font-size: 16px;
+    color: var(--el-color-primary);
+    margin-bottom: 4px;
+  }
+
+  .core-title {
+    font-family: var(--font-serif-italic);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    color: var(--el-text-color-primary);
+    font-weight: 600;
+  }
+
+  .core-motto {
+    font-family: var(--font-serif-italic);
+    font-style: italic;
+    font-size: 9.5px;
+    letter-spacing: 0.06em;
+    color: var(--el-text-color-secondary);
+    margin-top: 4px;
+  }
+}
+
+@keyframes rotateOuter {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes rotateInner {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 </style>
