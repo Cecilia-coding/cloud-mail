@@ -294,6 +294,7 @@ import {
   removeAccountPersona
 } from "@/utils/decoy-personas.js";
 import {fireDecoyProbe} from "@/request/privacy.js";
+import {resolveMessageMailbox} from "@/utils/mailbox-persona.js";
 
 const uiStore = useUiStore();
 const settingStore = useSettingStore();
@@ -314,30 +315,17 @@ const showTrackerLog = ref(false)
 
 // 📬 当前邮件所归属的邮箱地址与人格解析 (支持多重人格矩阵)
 const currentRecipientEmail = computed(() => {
-  if (accountStore.currentAccount?.email) {
-    return accountStore.currentAccount.email.toLowerCase().trim();
-  }
-  if (email.value?.recipient) {
-    try {
-      const rec = typeof email.value.recipient === 'string'
-        ? JSON.parse(email.value.recipient)
-        : email.value.recipient;
-      if (Array.isArray(rec) && rec.length > 0 && rec[0]?.address) {
-        return rec[0].address.toLowerCase().trim();
-      }
-    } catch (e) {}
-  }
-  return '';
+  return resolveMessageMailbox(
+    email.value?.recipient,
+    accountStore.currentAccount?.email
+  );
 });
 
 const currentMailboxTag = computed(() => {
-  if (accountStore.currentAccount?.name) {
-    return accountStore.currentAccount.name;
-  }
   if (currentRecipientEmail.value) {
     return currentRecipientEmail.value.split('@')[0];
   }
-  return '';
+  return accountStore.currentAccount?.name || '';
 });
 
 const effectivePersonaInfo = computed(() => {
@@ -413,13 +401,14 @@ async function poisonSingleTracker(url) {
   }
   poisoningMap[url] = true;
   try {
-    const res = await fireDecoyProbe(url, activePersonaKey.value);
+    const probeResult = await fireDecoyProbe(url, activePersonaKey.value);
     poisonedSuccessMap[url] = true;
-    const personaTitle = res?.data?.personaName || activePersona.value.name;
+    const personaTitle = probeResult?.personaName || activePersona.value.name;
+    const statusCode = probeResult?.statusCode ?? 200;
     const isNative = activePersonaKey.value === 'native_real';
     poisonedFeedbackMap[url] = isNative
-      ? `原生探针已送达！目标后台记录设备：真实本机指纹 (HTTP ${res?.data?.statusCode || 200})`
-      : `假遥测已送达！目标后台记录设备：${personaTitle} (HTTP ${res?.data?.statusCode || 200})`;
+      ? `原生探针已送达！目标后台记录设备：真实本机指纹 (HTTP ${statusCode})`
+      : `假遥测已送达！目标后台记录设备：${personaTitle} (HTTP ${statusCode})`;
     ElMessage.success({
       message: isNative ? '✦ 探针已从边缘送达！目标记录为你本机的真实 User-Agent' : `✦ 诱饵已从 Cloudflare 边缘送达！目标记录为「${personaTitle}」`,
       plain: true

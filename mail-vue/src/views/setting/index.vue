@@ -506,17 +506,17 @@ async function dispatchTestProbe() {
 
   fireLoading.value = true
   try {
-    const res = await fireDecoyProbe(testTargetUrl.value.trim(), selectedPersonaKey.value)
-    if (res && res.data) {
-      lastProbeResult.value = res.data
-      if (res.data.isSilent) {
+    const probeResult = await fireDecoyProbe(testTargetUrl.value.trim(), selectedPersonaKey.value)
+    if (probeResult) {
+      lastProbeResult.value = probeResult
+      if (probeResult.isSilent) {
         ElMessage.info({
           message: '✦ 绝对静默拦截生效：外发请求已被阻断，目标服务器 0 请求留痕！',
           plain: true
         })
       } else {
         ElMessage.success({
-          message: `✦ 探针已发射！目标服务器已捕获「${res.data.personaName}」身份`,
+          message: `✦ 探针已发射！目标服务器已捕获「${probeResult.personaName}」身份`,
           plain: true
         })
       }

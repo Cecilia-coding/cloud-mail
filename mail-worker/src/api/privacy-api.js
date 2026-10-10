@@ -293,84 +293,91 @@ const PERSONA_UA_MAP = {
   }
 };
 
+export async function runPrivacyProbe(
+  body,
+  { requestUserAgent = '', fetchImpl = fetch, random = Math.random } = {}
+) {
+  const { url, personaKey = 'smart_fridge' } = body || {};
+
+  if (!url || typeof url !== 'string' || !/^https?:\/\//i.test(url)) {
+    return result.fail('无效的目标 URL', 400);
+  }
+
+  let selectedKey = personaKey;
+  const concreteKeys = Object.keys(PERSONA_UA_MAP).filter(k => k !== 'native_real' && k !== 'silent_block');
+  if (selectedKey === 'quantum_random' || !PERSONA_UA_MAP[selectedKey]) {
+    selectedKey = concreteKeys[Math.floor(random() * concreteKeys.length)];
+  }
+
+  if (selectedKey === 'silent_block') {
+    return result.ok({
+      targetUrl: url,
+      statusCode: 200,
+      statusText: 'Blocked by Silent Mode',
+      personaKey: 'silent_block',
+      personaName: '绝对静默拦截 (彻底禁发探针 · 零网络出站)',
+      personaRole: '物理沙箱级黑洞拦截 · 0 网络出站',
+      userAgent: '[BLOCKED] 彻底封禁外发请求，目标端点未接收到任何流量',
+      referer: '',
+      node: 'Cloudflare Edge (Local Safe Block)',
+      isSilent: true,
+      message: '已启用绝对静默模式：已在边缘节点拦截外发请求，未向追踪器发送任何探针（0 IP 泄露，0 追踪响应）。'
+    });
+  }
+
+  const persona = PERSONA_UA_MAP[selectedKey] || PERSONA_UA_MAP.smart_fridge;
+
+  let targetUa = persona.ua;
+  let targetReferer = persona.referer || '';
+  if (selectedKey === 'native_real') {
+    targetUa = body.nativeUa || requestUserAgent || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
+    targetReferer = '';
+  }
+
+  let response;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 6000);
+
+  try {
+    response = await fetchImpl(url, {
+      method: 'GET',
+      headers: {
+        'User-Agent': targetUa,
+        'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+        ...(targetReferer ? { 'Referer': targetReferer } : {}),
+        'Cache-Control': 'no-cache',
+        'X-Forwarded-For': '198.51.100.' + (Math.floor(random() * 200) + 1),
+        'X-Decoy-Persona': selectedKey
+      },
+      signal: controller.signal
+    });
+  } catch (fetchErr) {
+    return result.fail(`诱饵投毒失败: ${fetchErr.message || '网络错误'}`, 502);
+  } finally {
+    clearTimeout(timeout);
+  }
+
+  return result.ok({
+    targetUrl: url,
+    statusCode: response.status,
+    statusText: response.statusText,
+    personaKey: selectedKey,
+    personaName: selectedKey === 'native_real' ? '真实本机直出 (未做伪装)' : persona.name,
+    personaRole: selectedKey === 'native_real' ? '原生客户端透传 · 本机真实环境' : persona.role,
+    userAgent: targetUa,
+    referer: targetReferer,
+    node: 'Cloudflare Edge Worker (Datacenter IP)'
+  });
+}
+
 app.post('/privacy/poison', async (c) => {
   try {
-    const body = await c.req.json();
-    const { url, personaKey = 'smart_fridge' } = body || {};
-    
-    if (!url || typeof url !== 'string' || !/^https?:\/\//i.test(url)) {
-      return c.json(result.error('无效的目标 URL'));
-    }
-
-    let selectedKey = personaKey;
-    const concreteKeys = Object.keys(PERSONA_UA_MAP).filter(k => k !== 'native_real' && k !== 'silent_block');
-    if (selectedKey === 'quantum_random' || !PERSONA_UA_MAP[selectedKey]) {
-      selectedKey = concreteKeys[Math.floor(Math.random() * concreteKeys.length)];
-    }
-
-    if (selectedKey === 'silent_block') {
-      return c.json(result.ok({
-        targetUrl: url,
-        statusCode: 200,
-        statusText: 'Blocked by Silent Mode',
-        personaKey: 'silent_block',
-        personaName: '绝对静默拦截 (彻底禁发探针 · 零网络出站)',
-        personaRole: '物理沙箱级黑洞拦截 · 0 网络出站',
-        userAgent: '[BLOCKED] 彻底封禁外发请求，目标端点未接收到任何流量',
-        referer: '',
-        node: 'Cloudflare Edge (Local Safe Block)',
-        isSilent: true,
-        message: '已启用绝对静默模式：已在边缘节点拦截外发请求，未向追踪器发送任何探针（0 IP 泄露，0 追踪响应）。'
-      }));
-    }
-
-    const persona = PERSONA_UA_MAP[selectedKey] || PERSONA_UA_MAP.smart_fridge;
-
-    let targetUa = persona.ua;
-    let targetReferer = persona.referer || '';
-    if (selectedKey === 'native_real') {
-      targetUa = body.nativeUa || c.req.header('user-agent') || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
-      targetReferer = '';
-    }
-
-    let statusCode = 200;
-    let statusText = 'OK';
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 6000);
-
-      const resp = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'User-Agent': targetUa,
-          'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
-          'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-          ...(targetReferer ? { 'Referer': targetReferer } : {}),
-          'Cache-Control': 'no-cache',
-          'X-Forwarded-For': '198.51.100.' + (Math.floor(Math.random() * 200) + 1),
-          'X-Decoy-Persona': selectedKey
-        },
-        signal: controller.signal
-      });
-      clearTimeout(timeout);
-      statusCode = resp.status;
-      statusText = resp.statusText;
-    } catch (fetchErr) {
-      statusText = fetchErr.message || 'Probe Dispatched';
-    }
-
-    return c.json(result.ok({
-      targetUrl: url,
-      statusCode,
-      statusText,
-      personaKey: selectedKey,
-      personaName: selectedKey === 'native_real' ? '真实本机直出 (未做伪装)' : persona.name,
-      personaRole: selectedKey === 'native_real' ? '原生客户端透传 · 本机真实环境' : persona.role,
-      userAgent: targetUa,
-      referer: targetReferer,
-      node: 'Cloudflare Edge Worker (Datacenter IP)'
-    }));
+    const response = await runPrivacyProbe(await c.req.json(), {
+      requestUserAgent: c.req.header('user-agent') || ''
+    });
+    return c.json(response);
   } catch (err) {
-    return c.json(result.error(err.message || '诱饵投毒执行失败'));
+    return c.json(result.fail(err.message || '诱饵投毒执行失败'));
   }
 });
