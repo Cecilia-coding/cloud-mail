@@ -22,6 +22,14 @@ const KNOWN_TRACKER_PATTERNS = [
   /banana-tag\.com/i,
   /emltrk\.com/i,
   /superhuman\.com\/api\/[a-z0-9/_-]*track/i,
+  /click\.anthropic\.com/i,
+  /email\.anthropic\.com/i,
+  /delivery\.anthropic\.com/i,
+  /customer\.io/i,
+  /cio\.com/i,
+  /c-io\.net/i,
+  /track\.customeriomail\.com/i,
+  /e\.customeriomail\.com/i,
   /\/open\?(?:[a-z0-9_=&-]+)?/i,
   /\/wf\/open\?(?:[a-z0-9_=&-]+)?/i,
   /\/track(?:ing)?\/(?:open|pixel)/i,
@@ -146,10 +154,32 @@ export function inspectAndSanitizeHtml(rawHtml, options = {}) {
       }
     });
 
-    // Harden links
+    // Harden links & strip tracking telemetry parameters
     if (el.tagName.toLowerCase() === 'a') {
       el.setAttribute('target', '_blank');
       el.setAttribute('rel', 'noopener noreferrer nofollow');
+
+      const href = el.getAttribute('href');
+      if (href && /^https?:\/\//i.test(href)) {
+        try {
+          const url = new URL(href);
+          let changed = false;
+          const telemetryParams = [
+            'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
+            'mc_cid', 'mc_eid', '_hsenc', '_hsmi', 'vero_id', 'recipient_id',
+            'spMailingID', 'spUserID', 'spJobID', 'spReportId'
+          ];
+          telemetryParams.forEach(param => {
+            if (url.searchParams.has(param)) {
+              url.searchParams.delete(param);
+              changed = true;
+            }
+          });
+          if (changed) {
+            el.setAttribute('href', url.toString());
+          }
+        } catch (e) {}
+      }
     }
   });
 
