@@ -49,7 +49,7 @@
       <div class="decoy-desc-box">
         <span class="fleuron-bullet">❖</span>
         <span>
-          当邮件中潜伏着营销追踪器（如 Anthropic/Claude、Customer.io、SendGrid）或 1x1 隐形透明像素时，隐私护盾除了就地切断本地探测外，还支持调用 Cloudflare 边缘计算集群，伪装成奇异设备身份（如三星智能冰箱、小天才手表、塞班机皇）向对方投掷虚假遥测数据，彻底击溃发信方的受众画像聚类，且 0 泄露真实家庭 IP。
+          当邮件中潜伏着营销追踪器（如 Anthropic/Claude、Customer.io、SendGrid）或 1x1 隐形透明像素时，隐私护盾除了就地切断本地探测外，还支持调用 Cloudflare 边缘计算集群，伪装成奇异设备身份（如三星智能冰箱、诺基亚塞班机皇、成人情趣脉冲器、主流 iPhone/MacBook）向对方投掷虚假遥测数据，或者选择「真实本机直出 (无替身)」，彻底掌控你暴露给外部互联网的设备指纹。
         </span>
       </div>
 
@@ -74,7 +74,7 @@
           v-for="p in filteredPersonas"
           :key="p.key"
           class="persona-tile"
-          :class="{ 'is-selected': selectedPersonaKey === p.key }"
+          :class="{ 'is-selected': selectedPersonaKey === p.key, 'is-native-tile': p.key === 'native_real' }"
           @click="selectPersona(p.key)"
         >
           <div class="tile-top">
@@ -83,13 +83,13 @@
               <span class="tile-name">{{ p.name }}</span>
             </div>
             <div class="tile-seal">
-              <span v-if="selectedPersonaKey === p.key" class="seal-active">✦ 已启用</span>
-              <span v-else class="seal-inactive">选择</span>
+              <span v-if="selectedPersonaKey === p.key" class="seal-active">{{ p.key === 'native_real' ? '✦ 原生直出' : '✦ 已启用' }}</span>
+              <span v-else class="seal-inactive">{{ p.key === 'native_real' ? '不使用替身' : '选择' }}</span>
             </div>
           </div>
 
           <div class="tile-badge-row">
-            <span class="tile-badge">{{ p.badge }}</span>
+            <span class="tile-badge" :class="{ 'native-badge': p.key === 'native_real' }">{{ p.badge }}</span>
             <span class="tile-res">{{ p.resolution }}</span>
           </div>
 
@@ -142,7 +142,7 @@
           >
             <span v-if="fireLoading" class="loading-spin">✦</span>
             <Icon v-else icon="solar:plain-linear" width="15" height="15" />
-            <span>{{ fireLoading ? '边缘节点发射中...' : `以 [${activePersona.shortName}] 身份发射诱饵` }}</span>
+            <span>{{ fireLoading ? '边缘节点发射中...' : (activePersona.key === 'native_real' ? '以 [本机真实原生] 身份发射探针' : `以 [${activePersona.shortName}] 身份发射诱饵`) }}</span>
           </button>
         </div>
 
@@ -168,7 +168,7 @@
               <span class="term-val">{{ lastProbeResult.targetUrl }}</span>
             </div>
             <div class="terminal-row">
-              <span class="term-lbl">伪装身份:</span>
+              <span class="term-lbl">{{ lastProbeResult.personaKey === 'native_real' ? '设备特征:' : '伪装身份:' }}</span>
               <span class="term-val highlight">{{ lastProbeResult.personaName }}</span>
             </div>
             <div class="terminal-row">
@@ -180,8 +180,10 @@
               <span class="term-val node">{{ lastProbeResult.node || 'Cloudflare Edge Datacenter (美国/东京)' }}</span>
             </div>
             <div class="terminal-row note">
-              <span class="term-lbl">安全保证:</span>
-              <span class="term-val green">真实客户端 IP 0 泄露，发件人后台已记录所选奇异设备开信指纹！</span>
+              <span class="term-lbl">指纹说明:</span>
+              <span class="term-val" :class="lastProbeResult.personaKey === 'native_real' ? 'blue' : 'green'">
+                {{ lastProbeResult.personaKey === 'native_real' ? '真实原生透传模式：未启用任何虚拟替身，目标端点已捕获你当前真实使用的浏览器 User-Agent！' : '真实客户端 IP 0 泄露，发件人后台已记录所选奇异设备开信指纹！' }}
+              </span>
             </div>
           </div>
         </div>
@@ -698,6 +700,24 @@ function submitPwd() {
           }
         }
 
+        &.is-native-tile {
+          border-style: dashed;
+          border-color: #baa4c9;
+          background: #faf8fc;
+
+          &.is-selected {
+            border-style: solid;
+            border-color: #2e7559;
+            background: linear-gradient(180deg, rgba(46, 117, 89, 0.05) 0%, #ffffff 100%);
+            box-shadow: 0 4px 16px rgba(46, 117, 89, 0.14), inset 0 0 0 1px #2e7559;
+
+            .tile-seal .seal-active {
+              background: #2e7559;
+              border-color: #2e7559;
+            }
+          }
+        }
+
         .tile-top {
           display: flex;
           justify-content: space-between;
@@ -759,6 +779,12 @@ function submitPwd() {
             padding: 2px 7px;
             border-radius: 4px;
             font-family: monospace;
+
+            &.native-badge {
+              background: rgba(46, 117, 89, 0.12);
+              color: #2e7559;
+              font-weight: 600;
+            }
           }
 
           .tile-res {
@@ -1026,6 +1052,10 @@ function submitPwd() {
 
               &.green {
                 color: #7ee787;
+              }
+
+              &.blue {
+                color: #79c0ff;
               }
             }
 

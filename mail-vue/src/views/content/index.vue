@@ -65,13 +65,13 @@
               <el-dropdown trigger="click" @command="handleSelectPersona">
                 <button class="shield-btn persona-btn" title="点击切换反向投毒伪装设备">
                   <span class="persona-emoji">{{ activePersona.emoji }}</span>
-                  <span class="persona-label">替身: {{ activePersona.shortName }}</span>
+                  <span class="persona-label">{{ activePersona.key === 'native_real' ? '原生未替身' : `替身: ${activePersona.shortName}` }}</span>
                   <Icon icon="solar:alt-arrow-down-linear" width="11" height="11" />
                 </button>
                 <template #dropdown>
                   <el-dropdown-menu class="codex-dropdown-menu persona-dropdown">
                     <div class="dropdown-header-note">
-                      <span class="fleuron">✦</span> 替身人格矩阵 (Decoy Personas · 35 奇异设备)
+                      <span class="fleuron">✦</span> 设备指纹与替身矩阵 (Decoy Personas · 43 款设备)
                     </div>
                     <el-scrollbar max-height="340px">
                       <el-dropdown-item
@@ -294,7 +294,7 @@ function handleSelectPersona(key) {
   setActivePersonaKey(key);
   const p = DECOY_PERSONAS.find(item => item.key === key);
   ElMessage.success({
-    message: `✦ 已切换当前伪装身份为「${p.name}」`,
+    message: key === 'native_real' ? '✦ 已恢复为「真实本机直出 (不使用替身)」' : `✦ 已切换当前伪装身份为「${p.name}」`,
     plain: true
   });
 }
@@ -311,10 +311,12 @@ async function poisonSingleTracker(url) {
     const res = await fireDecoyProbe(url, activePersonaKey.value);
     poisonedSuccessMap[url] = true;
     const personaTitle = res?.data?.personaName || activePersona.value.name;
-    const uaSnippet = res?.data?.userAgent ? (res.data.userAgent.slice(0, 48) + '...') : '';
-    poisonedFeedbackMap[url] = `假遥测已送达！目标后台记录设备：${personaTitle} (HTTP ${res?.data?.statusCode || 200})`;
+    const isNative = activePersonaKey.value === 'native_real';
+    poisonedFeedbackMap[url] = isNative
+      ? `原生探针已送达！目标后台记录设备：真实本机指纹 (HTTP ${res?.data?.statusCode || 200})`
+      : `假遥测已送达！目标后台记录设备：${personaTitle} (HTTP ${res?.data?.statusCode || 200})`;
     ElMessage.success({
-      message: `✦ 诱饵已从 Cloudflare 边缘送达！目标记录为「${personaTitle}」`,
+      message: isNative ? '✦ 探针已从边缘送达！目标记录为你本机的真实 User-Agent' : `✦ 诱饵已从 Cloudflare 边缘送达！目标记录为「${personaTitle}」`,
       plain: true
     });
   } catch (err) {

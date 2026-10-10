@@ -2,6 +2,56 @@ import app from '../hono/hono';
 import result from '../model/result';
 
 const PERSONA_UA_MAP = {
+  // ── 现代常规与日常真机 (含真实原生无伪装) ───────────────────────
+  native_real: {
+    ua: '',
+    referer: '',
+    name: '真实本机直出 (原生指纹 · 不做伪装)',
+    role: '原生客户端透传 · 本机真实环境'
+  },
+  iphone_16_pro: {
+    ua: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1',
+    referer: 'https://mail.apple.com/inbox',
+    name: 'Apple iPhone 16 Pro Max (主流 iOS 旗舰)',
+    role: 'iOS 18.1 · Mobile Safari'
+  },
+  macbook_pro_m3: {
+    ua: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15',
+    referer: 'https://mail.apple.com/macos-inbox',
+    name: 'Apple MacBook Pro 16" (M3 Max / macOS)',
+    role: 'macOS 14.7 · Safari 17.6'
+  },
+  windows11_pc: {
+    ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
+    referer: 'https://outlook.live.com/mail',
+    name: 'Windows 11 旗舰台式工作站 (Chrome 130)',
+    role: 'Win11 24H2 · Google Chrome 130'
+  },
+  pixel_9_pro: {
+    ua: 'Mozilla/5.0 (Linux; Android 15; Pixel 9 Pro XL) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6723.86 Mobile Safari/537.36',
+    referer: 'https://mail.google.com/mail/mu/mp',
+    name: 'Google Pixel 9 Pro XL (原生 Android 15)',
+    role: 'Android 15 · Chrome 130 Mobile'
+  },
+  ipad_pro_m4: {
+    ua: 'Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
+    referer: 'https://mail.apple.com/ipad-inbox',
+    name: 'Apple iPad Pro 13" (M4 芯片 · iPadOS)',
+    role: 'iPadOS 18.0 · Mobile Safari'
+  },
+  thinkpad_edge: {
+    ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0',
+    referer: 'https://outlook.office365.com/mail',
+    name: 'ThinkPad X1 Carbon Gen 12 (商务轻薄本)',
+    role: 'Win11 专业版 · Microsoft Edge 130'
+  },
+  ubuntu_linux: {
+    ua: 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:131.0) Gecko/20100101 Firefox/131.0',
+    referer: 'https://mail.google.com/mail/u/0',
+    name: 'Ubuntu Linux 24.04 LTS (开发者工作站)',
+    role: 'Linux x86_64 · Firefox 131'
+  },
+
   // ── 赛博古董与已死系统 ─────────────────────────────────────────
   nokia_n97: {
     ua: 'NokiaN97/21.0.045; SymbianOS/9.4; Series60/5.0 Mozilla/5.0; Profile/MIDP-2.1 Configuration/CLDC-1.1',
@@ -229,11 +279,18 @@ app.post('/privacy/poison', async (c) => {
     }
 
     let selectedKey = personaKey;
-    const concreteKeys = Object.keys(PERSONA_UA_MAP);
+    const concreteKeys = Object.keys(PERSONA_UA_MAP).filter(k => k !== 'native_real');
     if (selectedKey === 'quantum_random' || !PERSONA_UA_MAP[selectedKey]) {
       selectedKey = concreteKeys[Math.floor(Math.random() * concreteKeys.length)];
     }
     const persona = PERSONA_UA_MAP[selectedKey] || PERSONA_UA_MAP.smart_fridge;
+
+    let targetUa = persona.ua;
+    let targetReferer = persona.referer || '';
+    if (selectedKey === 'native_real') {
+      targetUa = body.nativeUa || c.req.header('user-agent') || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
+      targetReferer = '';
+    }
 
     let statusCode = 200;
     let statusText = 'OK';
@@ -244,10 +301,10 @@ app.post('/privacy/poison', async (c) => {
       const resp = await fetch(url, {
         method: 'GET',
         headers: {
-          'User-Agent': persona.ua,
+          'User-Agent': targetUa,
           'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
           'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-          'Referer': persona.referer,
+          ...(targetReferer ? { 'Referer': targetReferer } : {}),
           'Cache-Control': 'no-cache',
           'X-Forwarded-For': '198.51.100.' + (Math.floor(Math.random() * 200) + 1),
           'X-Decoy-Persona': selectedKey
@@ -266,10 +323,10 @@ app.post('/privacy/poison', async (c) => {
       statusCode,
       statusText,
       personaKey: selectedKey,
-      personaName: persona.name,
-      personaRole: persona.role,
-      userAgent: persona.ua,
-      referer: persona.referer,
+      personaName: selectedKey === 'native_real' ? '真实本机直出 (未做伪装)' : persona.name,
+      personaRole: selectedKey === 'native_real' ? '原生客户端透传 · 本机真实环境' : persona.role,
+      userAgent: targetUa,
+      referer: targetReferer,
       node: 'Cloudflare Edge Worker (Datacenter IP)'
     }));
   } catch (err) {

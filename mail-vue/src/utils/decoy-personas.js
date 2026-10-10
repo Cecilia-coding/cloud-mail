@@ -14,6 +14,7 @@ export const DECOY_STORAGE_KEY = 'cloud_mail_decoy_persona';
 
 export const DECOY_CATEGORIES = [
   { key: 'all', name: '全部印籍', icon: 'solar:widget-linear' },
+  { key: 'mainstream_daily', name: '现代常规与日常真机', icon: 'solar:laptop-minimalistic-linear' },
   { key: 'retro_ancient', name: '赛博古董与已死系统', icon: 'solar:cassette-linear' },
   { key: 'intimate', name: '私密情趣与成人玩具', icon: 'solar:heart-linear' },
   { key: 'home_bath', name: '智能卫浴与离奇厨电', icon: 'solar:bath-linear' },
@@ -23,6 +24,128 @@ export const DECOY_CATEGORIES = [
 ];
 
 export const DECOY_PERSONAS = [
+  // ── 现代常规与日常真机 (含真实原生无伪装) ───────────────────────
+  {
+    key: 'native_real',
+    category: 'mainstream_daily',
+    name: '真实本机直出 (原生指纹 · 不做伪装)',
+    shortName: '真实本机直出',
+    emoji: '⚡',
+    icon: 'solar:shield-check-linear',
+    badge: '✦ 真实原生 (无替身)',
+    specs: '当前真实浏览器 · 100% 原生系统指纹透传',
+    resolution: '自适应本机屏幕分辨率',
+    chip: '本机真实硬件与操作系统',
+    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
+    referer: '',
+    description: '完全不使用任何虚拟替身。保留你当前真实系统的 User-Agent 与特征进行透传，如同在普通邮件客户端直接打开。'
+  },
+  {
+    key: 'iphone_16_pro',
+    category: 'mainstream_daily',
+    name: 'Apple iPhone 16 Pro Max (主流 iOS 旗舰)',
+    shortName: 'iPhone 16 Pro Max',
+    emoji: '📱',
+    icon: 'solar:smartphone-linear',
+    badge: 'iOS 18.1 · Mobile Safari',
+    specs: '6.9" Super Retina XDR OLED · 460 ppi',
+    resolution: '2868 × 1320',
+    chip: 'Apple A18 Pro (3nm) 仿生芯片',
+    userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1',
+    referer: 'https://mail.apple.com/inbox',
+    description: '全球保有量极大的苹果主力机型。发信方追踪后台将记录为标准 iPhone 邮件客户端在移动网络下阅信。'
+  },
+  {
+    key: 'macbook_pro_m3',
+    category: 'mainstream_daily',
+    name: 'Apple MacBook Pro 16" (M3 Max / macOS)',
+    shortName: 'MacBook Pro M3',
+    emoji: '💻',
+    icon: 'solar:laptop-minimalistic-linear',
+    badge: 'macOS 14.7 · Safari 17.6',
+    specs: '16.2" Mini-LED 120Hz ProMotion 视网膜 XDR 屏',
+    resolution: '3456 × 2234',
+    chip: 'Apple M3 Max (16核 CPU / 40核 GPU)',
+    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15',
+    referer: 'https://mail.apple.com/macos-inbox',
+    description: '设计师与全栈工程师常见的主力生产力工具。追踪后台将识别为北美/亚太典型的 macOS 高分辨率桌面用户。'
+  },
+  {
+    key: 'windows11_pc',
+    category: 'mainstream_daily',
+    name: 'Windows 11 旗舰台式工作站 (Chrome 130)',
+    shortName: 'Windows 11 PC',
+    emoji: '🖥️',
+    icon: 'solar:monitor-linear',
+    badge: 'Win11 24H2 · Google Chrome 130',
+    specs: '32" 4K UHD 144Hz 专业广色域显示器',
+    resolution: '3840 × 2160',
+    chip: 'Intel Core i9-14900K · RTX 4090',
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
+    referer: 'https://outlook.live.com/mail',
+    description: '全球市场份额最高的主流桌面 PC 平台。毫无任何异常特征，完美隐匿融入数十亿桌面用户大盘。'
+  },
+  {
+    key: 'pixel_9_pro',
+    category: 'mainstream_daily',
+    name: 'Google Pixel 9 Pro XL (原生 Android 15)',
+    shortName: 'Pixel 9 Pro XL',
+    emoji: '📱',
+    icon: 'solar:smartphone-linear',
+    badge: 'Android 15 · Chrome 130',
+    specs: '6.8" LTPO Super Actua OLED · 120Hz 高刷',
+    resolution: '2992 × 1344',
+    chip: 'Google Tensor G4 + Titan M2 安全协处理器',
+    userAgent: 'Mozilla/5.0 (Linux; Android 15; Pixel 9 Pro XL) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6723.86 Mobile Safari/537.36',
+    referer: 'https://mail.google.com/mail/mu/mp',
+    description: '谷歌官方亲儿子原生旗舰机，呈现最标准规范的 Google 原生生态移动端指纹。'
+  },
+  {
+    key: 'ipad_pro_m4',
+    category: 'mainstream_daily',
+    name: 'Apple iPad Pro 13" (M4 芯片 · iPadOS)',
+    shortName: 'iPad Pro 13" M4',
+    emoji: '📱',
+    icon: 'solar:tablet-linear',
+    badge: 'iPadOS 18.0 · Mobile Safari',
+    specs: '13" Ultra Retina XDR 双层串联 OLED 触控屏',
+    resolution: '2752 × 2064',
+    chip: 'Apple M4 芯片 (双层串联 OLED 架构)',
+    userAgent: 'Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
+    referer: 'https://mail.apple.com/ipad-inbox',
+    description: '主流大屏平板电脑标杆，呈现典型的大屏平板阅读与 Apple Pencil 触控生态特征。'
+  },
+  {
+    key: 'thinkpad_edge',
+    category: 'mainstream_daily',
+    name: 'ThinkPad X1 Carbon Gen 12 (商务轻薄本)',
+    shortName: 'ThinkPad X1',
+    emoji: '💼',
+    icon: 'solar:laptop-linear',
+    badge: 'Win11 专业版 · Edge 130',
+    specs: '14" 2.8K 120Hz OLED 商务防窥屏',
+    resolution: '2880 × 1800',
+    chip: 'Intel Core Ultra 7 155H (NPU AI 加速)',
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0',
+    referer: 'https://outlook.office365.com/mail',
+    description: '跨国 500 强外企精英最常用的商务办公本，携带标准的微软办公生态与 Edge 浏览器特征。'
+  },
+  {
+    key: 'ubuntu_linux',
+    category: 'mainstream_daily',
+    name: 'Ubuntu Linux 24.04 LTS (开发者工作站)',
+    shortName: 'Ubuntu 24.04',
+    emoji: '🐧',
+    icon: 'solar:server-linear',
+    badge: 'Linux x86_64 · Firefox 131',
+    specs: 'GNOME 46 桌面环境 · Wayland 显示协议',
+    resolution: '2560 × 1440',
+    chip: 'AMD Ryzen 9 7950X (16核 32线程)',
+    userAgent: 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:131.0) Gecko/20100101 Firefox/131.0',
+    referer: 'https://mail.google.com/mail/u/0',
+    description: '程序员与开源极客最常用的 Linux 生产力环境，纯正的开源 Firefox 浏览器指纹。'
+  },
+
   // ── 赛博古董与已死系统 ─────────────────────────────────────────
   {
     key: 'nokia_n97',
@@ -600,7 +723,7 @@ export function getActivePersona() {
  */
 export function resolveConcretePersona(key = getActivePersonaKey()) {
   if (key === 'quantum_random') {
-    const pool = DECOY_PERSONAS.filter(p => p.key !== 'quantum_random');
+    const pool = DECOY_PERSONAS.filter(p => p.key !== 'quantum_random' && p.key !== 'native_real');
     const idx = Math.floor(Math.random() * pool.length);
     return pool[idx];
   }
