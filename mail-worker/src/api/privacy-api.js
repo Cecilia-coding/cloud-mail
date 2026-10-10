@@ -2,7 +2,89 @@ import app from '../hono/hono';
 import result from '../model/result';
 
 const PERSONA_UA_MAP = {
-  // ── 智能卫浴与厨电 ─────────────────────────────────────────────
+  // ── 赛博古董与已死系统 ─────────────────────────────────────────
+  nokia_n97: {
+    ua: 'NokiaN97/21.0.045; SymbianOS/9.4; Series60/5.0 Mozilla/5.0; Profile/MIDP-2.1 Configuration/CLDC-1.1',
+    referer: 'http://wap.nokia.com/mail',
+    name: '诺基亚 N97 侧滑盖塞班机皇 (2009)',
+    role: 'Symbian OS 9.4 · QWERTY 侧滑键盘'
+  },
+  blackberry_bold: {
+    ua: 'Mozilla/5.0 (BlackBerry; U; BlackBerry 9900; en-US) AppleWebKit/534.11+ (KHTML, like Gecko) Version/7.1.0.342 Mobile Safari/534.11+',
+    referer: 'http://bis.na.blackberry.com/client/push-mail',
+    name: '黑莓 BlackBerry Bold 9900 (全键盘商务机)',
+    role: 'BlackBerry OS 7.1 · 华尔街 BES 邮件推送'
+  },
+  palm_treo: {
+    ua: 'Mozilla/4.0 (compatible; MSIE 6.0; Windows 98; PalmSource/hspr-H102; Blazer/4.0) 16;320x320',
+    referer: 'http://palm.com/blazer-browser/memo-sync',
+    name: '掌上电脑 Palm Treo 650 (手写笔电阻屏)',
+    role: 'Palm OS 5.4 · 手写笔电阻屏戳击开信'
+  },
+  nokia_lumia: {
+    ua: 'Mozilla/5.0 (Mobile; Windows Phone 8.1; Android 4.0; ARM; Trident/7.0; Touch; rv:11.0; IEMobile/11.0; NOKIA; Lumia 1020) like iPhone OS 7_0_3 Mac OS X AppleWebKit/537 (KHTML, like Gecko) Mobile Safari/537',
+    referer: 'https://live.com/outlook-mobile/tile-sync',
+    name: '诺基亚 Lumia 1020 (已绝版 Windows Phone 8.1)',
+    role: 'Windows Phone 8.1 · 4100万奥利奥磁贴'
+  },
+  motorola_pager: {
+    ua: 'Motorola-Bravo-Pager/POCSAG-1200 (Numeric-Alphanumeric; Beeper-Alert; MsgID-9999)',
+    referer: 'pager://127.0.0.1/radio-call-station/message-inbox',
+    name: '摩托罗拉 Bravo 汉字寻呼机 (BB机单行绿光屏)',
+    role: 'POCSAG 寻呼网 · 哔哔哔蜂鸣单行绿光'
+  },
+  tamagotchi_pet: {
+    ua: 'Bandai-Tamagotchi/Gen1-1996 (4bit-MCU; 32x16-Pixel; PoopAlert-True; PetHunger-Level3)',
+    referer: 'tamagotchi://virtual-pet/clean-poop-action',
+    name: '万代电子宠物拓麻歌子 (1996 黑白像素蛋)',
+    role: 'Tamagotchi OS · 32x16像素正在铲屎'
+  },
+  ipod_classic: {
+    ua: 'Mozilla/5.0 (Apple-iPod-Classic; CPU OS 2_0_4 like Mac OS X; ClickWheel-Nav) AppleWebKit/420+ (KHTML, like Gecko) Safari/419.3',
+    referer: 'http://itunes.apple.local/ipod/clickwheel-notes',
+    name: 'Apple iPod Classic (160GB 机械硬盘滚轮)',
+    role: 'iPod OS 2.0 · 五维机械转盘与微硬盘'
+  },
+  meizu_m6: {
+    ua: 'Meizu-M6-miniPlayer/SP-2.004.1 (Linux; RBox; ARM9) MeizuBrowser/1.0',
+    referer: 'http://meizu.com/miniplayer/lrc',
+    name: '魅族 M6 miniPlayer (2006 飞利浦芯 MP3)',
+    role: 'SP-2.004 · 魅族滑动触摸条与歌词显示'
+  },
+  nintendo_3ds: {
+    ua: 'Mozilla/5.0 (Nintendo 3DS; U; ; zh) Version/1.7634.CN',
+    referer: 'https://netfront.nintendo.net/browser',
+    name: '任天堂 3DS LL (裸眼 3D 双屏掌机)',
+    role: 'Nintendo OS · 双屏裸眼 3D 手写笔'
+  },
+  kindle_paperwhite: {
+    ua: 'Mozilla/5.0 (X11; U; Linux armv7l like Android; en-us) AppleWebKit/538.1 (KHTML, like Gecko) Version/5.0 Safari/538.1 Kindle/5.14.2 (screen 1072x1448; text-color-mode: grayscale)',
+    referer: 'https://kindle.amazon.com/experimental-browser/bookshelf',
+    name: 'Amazon Kindle Paperwhite (电子墨水屏)',
+    role: 'Kindle OS 5.14 · 16阶灰度Carta水墨屏'
+  },
+
+  // ── 私密情趣与成人玩具 ─────────────────────────────────────────
+  lelo_smart_vibe: {
+    ua: 'Mozilla/5.0 (Linux; Lelo-OS/2.1.0; Lelo-F1s-V2-Bluetooth) AppleWebKit/537.36 (KHTML, like Gecko) LeloConnect/3.4 AdultToy-Telemetry/1.0 Frequency-120Hz',
+    referer: 'ble://lelo.app.bluetooth/device/vibration-frequency-sync',
+    name: '瑞典 Lelo F1s 极智成人按摩器 (开发者套件)',
+    role: 'Lelo OS 2.1 · 10档双马达共振频率120Hz'
+  },
+  satisfyer_pro: {
+    ua: 'Satisfyer-Connect/4.12.0 (iOS; AirPulse-PulseWave-v3; RemoteControl-PartnerMode; WhisperQuiet-True)',
+    referer: 'https://satisfyer-cloud.de/remote/partner-control/session',
+    name: '德国 Satisfyer Pro 2+ 智能空气波脉冲器',
+    role: 'AirPulse · 跨洋异地情侣远程声波脉冲'
+  },
+  wevibe_chorus: {
+    ua: 'We-Connect/5.8 (Android; WeVibe-Chorus-BLE; SqueezeSensor-Active; SqueezeForce-85pct)',
+    referer: 'https://we-vibe.com/we-connect/dual-vibe-telemetry',
+    name: '加拿大 We-Vibe Chorus 智能双人共振感应器',
+    role: 'We-Connect · Squeeze握力挤压85%实时共振'
+  },
+
+  // ── 智能卫浴与离奇厨电 ─────────────────────────────────────────
   smart_toilet: {
     ua: 'Mozilla/5.0 (Linux; Tizen 5.5; Kohler-Numi2-SmartToilet/Bidet-v2) AppleWebKit/537.36 (KHTML, like Gecko) KohlerBath/4.1 ToiletBrowser/2.0 Safari/537.36',
     referer: 'https://iot.kohler.local/restroom/numi-bidet/status',
@@ -34,50 +116,30 @@ const PERSONA_UA_MAP = {
     role: 'iRobot OS · 卡在客厅餐桌底下'
   },
 
-  // ── 赛博古董与乐器 ─────────────────────────────────────────────
+  // ── 离奇海外与商用机台 ─────────────────────────────────────────
+  mcdonalds_kiosk: {
+    ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; McDonald-SelfOrder-Kiosk/K20-US) AppleWebKit/537.36 (KHTML, like Gecko) McOrderKiosk/8.4.1 Chrome/91.0.4472.164 Safari/537.36',
+    referer: 'https://pos.mcdonalds.local/kiosk-ui/meal-combo-order',
+    name: '麦当劳巨型立式自助点餐大屏 (选配套餐中)',
+    role: 'Windows 10 IoT · 32寸触屏选配甜筒'
+  },
   ktv_kiosk: {
     ua: 'Mozilla/5.0 (Windows NT 6.1; WOW64; KTV-VOD-Player/Thunder-v9) AppleWebKit/537.36 (KHTML, like Gecko) KTVBrowser/3.0 Safari/537.36',
     referer: 'http://ktv-local-vod.lan/box-888/karaoke-playlist',
     name: 'KTV 巨型霓虹点歌机台 (切歌重唱中)',
     role: 'Windows Embedded · 伴奏青藏高原高潮破音'
   },
-  kindle_paperwhite: {
-    ua: 'Mozilla/5.0 (X11; U; Linux armv7l like Android; en-us) AppleWebKit/538.1 (KHTML, like Gecko) Version/5.0 Safari/538.1 Kindle/5.14.2 (screen 1072x1448; text-color-mode: grayscale)',
-    referer: 'https://kindle.amazon.com/experimental-browser/bookshelf',
-    name: 'Amazon Kindle Paperwhite (电子墨水屏)',
-    role: 'Kindle OS 5.14 · 16阶灰度Carta水墨屏'
+  vegas_slots: {
+    ua: 'Mozilla/5.0 (Windows NT 10.0; IGT-SlotMachine/Advantage-Bonusing) AppleWebKit/537.36 (KHTML, like Gecko) CasinoKiosk/4.2 Safari/537.36',
+    referer: 'https://casino-floor.bellagio.vegas/slot/jackpot-spin',
+    name: '拉斯维加斯 777 赌场巨型老虎机台',
+    role: 'IGT Advantage · 百乐宫赌场疯狂吐币'
   },
-  ipod_classic: {
-    ua: 'Mozilla/5.0 (Apple-iPod-Classic; CPU OS 2_0_4 like Mac OS X; ClickWheel-Nav) AppleWebKit/420+ (KHTML, like Gecko) Safari/419.3',
-    referer: 'http://itunes.apple.local/ipod/clickwheel-notes',
-    name: 'Apple iPod Classic (160GB 机械硬盘滚轮)',
-    role: 'iPod OS 2.0 · 五维机械转盘与微硬盘'
-  },
-  meizu_m6: {
-    ua: 'Meizu-M6-miniPlayer/SP-2.004.1 (Linux; RBox; ARM9) MeizuBrowser/1.0',
-    referer: 'http://meizu.com/miniplayer/lrc',
-    name: '魅族 M6 miniPlayer (2006 飞利浦芯 MP3)',
-    role: 'SP-2.004 · 魅族滑动触摸条与歌词显示'
-  },
-  nokia_n97: {
-    ua: 'NokiaN97/21.0.045; SymbianOS/9.4; Series60/5.0 Mozilla/5.0; Profile/MIDP-2.1 Configuration/CLDC-1.1',
-    referer: 'http://wap.nokia.com/mail',
-    name: '诺基亚 N97 侧滑盖塞班机皇 (2009)',
-    role: 'Symbian OS 9.4 · QWERTY 侧滑键盘'
-  },
-  nintendo_3ds: {
-    ua: 'Mozilla/5.0 (Nintendo 3DS; U; ; zh) Version/1.7634.CN',
-    referer: 'https://netfront.nintendo.net/browser',
-    name: '任天堂 3DS LL (裸眼 3D 双屏掌机)',
-    role: 'Nintendo OS · 双屏裸眼 3D 手写笔'
-  },
-
-  // ── 离奇海外与商用 ─────────────────────────────────────────────
-  mcdonalds_kiosk: {
-    ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; McDonald-SelfOrder-Kiosk/K20-US) AppleWebKit/537.36 (KHTML, like Gecko) McOrderKiosk/8.4.1 Chrome/91.0.4472.164 Safari/537.36',
-    referer: 'https://pos.mcdonalds.local/kiosk-ui/meal-combo-order',
-    name: '麦当劳巨型立式自助点餐大屏 (选配套餐中)',
-    role: 'Windows 10 IoT · 32寸触屏选配甜筒'
+  boeing_ife: {
+    ua: 'Mozilla/5.0 (Linux; Tizen 2.4; InFlight-Entertainment-Panasonic-eX3) AppleWebKit/538.1 (KHTML, like Gecko) AeroBrowser/2.1 SatelliteNet/GEO-Ka',
+    referer: 'https://in-flight.wifi.aero/portal/flight-map',
+    name: '波音 777-300ER 经济舱后背娱乐屏 (巡航中)',
+    role: 'Panasonic eX3 · 万米巡航北极圈卫通'
   },
   tesla_car: {
     ua: 'Mozilla/5.0 (X11; GNU/Linux) AppleWebKit/537.36 (KHTML, like Gecko) Chromium/108.0.5359.215 Chrome/108.0.5359.215 Safari/537.36 Tesla/2024.26.8-12345',
@@ -91,18 +153,6 @@ const PERSONA_UA_MAP = {
     name: '保时捷 Taycan Turbo S 副驾独立屏幕',
     role: 'Porsche PCM · 纽北赛道 260km/h 极速'
   },
-  boeing_ife: {
-    ua: 'Mozilla/5.0 (Linux; Tizen 2.4; InFlight-Entertainment-Panasonic-eX3) AppleWebKit/538.1 (KHTML, like Gecko) AeroBrowser/2.1 SatelliteNet/GEO-Ka',
-    referer: 'https://in-flight.wifi.aero/portal/flight-map',
-    name: '波音 777-300ER 经济舱后背娱乐屏 (巡航中)',
-    role: 'Panasonic eX3 · 万米巡航北极圈卫通'
-  },
-  vegas_slots: {
-    ua: 'Mozilla/5.0 (Windows NT 10.0; IGT-SlotMachine/Advantage-Bonusing) AppleWebKit/537.36 (KHTML, like Gecko) CasinoKiosk/4.2 Safari/537.36',
-    referer: 'https://casino-floor.bellagio.vegas/slot/jackpot-spin',
-    name: '拉斯维加斯 777 赌场巨型老虎机台',
-    role: 'IGT Advantage · 百乐宫赌场疯狂吐币'
-  },
   playstation_5: {
     ua: 'Mozilla/5.0 (PlayStation; PlayStation 5/8.60) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15',
     referer: 'https://playstation.net/ps5/system/guide',
@@ -110,7 +160,7 @@ const PERSONA_UA_MAP = {
     role: 'PlayStation OS · 4K 客厅电视与手柄晃动'
   },
 
-  // ── 深空科考与重器 ─────────────────────────────────────────────
+  // ── 深空科考与重工重器 ─────────────────────────────────────────
   jwst_telescope: {
     ua: 'NASA-ESA-CSA-JWST/Ops-Cycle-3 (Lagrange-L2; NIRCam-CryoOS 5.1; DeepSpaceNetwork-70m)',
     referer: 'https://webbtelescope.org/telemetry/nirspec-spectroscopy',
@@ -142,7 +192,7 @@ const PERSONA_UA_MAP = {
     role: 'RobotOS 3.3 · 工业巡检四足动态平衡'
   },
 
-  // ── 离谱廉价穷鬼机 ─────────────────────────────────────────────
+  // ── 极简廉价穷鬼硬件 ─────────────────────────────────────────
   walmart_onn: {
     ua: 'Mozilla/5.0 (Linux; Android 12; onn. 4K Streaming Box Build/STT2.220920.001) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.61 Mobile Safari/537.36',
     referer: 'https://tv.walmart.com/streaming/home',

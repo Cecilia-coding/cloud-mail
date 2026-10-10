@@ -1,135 +1,122 @@
 /**
  * Decoy Personas & Telemetry Poisoning Engine (幽灵替身与遥测反向投毒)
  * 
- * Disguises email client identity as exotic and hilarious devices (JWST Space Telescope,
- * KTV VOD Kiosk, Smart Toilet, Kindle, iPod Classic, Smart Toaster, Boeing 777 In-Flight Screen,
- * Vegas Slot Machine, Porsche Taycan, Nuclear Submarine, CERN LHC, Walmart $15 Stick, ESP8266, etc.)
- * and dispatches spoofed telemetry via Cloudflare Worker edge proxy.
+ * Disguises email client identity as exotic and hilarious devices:
+ * - 赛博古董与已死系统: Nokia N97, BlackBerry Bold, Palm Treo, Lumia 1020, Motorola Pager, Tamagotchi, iPod, Meizu, 3DS, Kindle
+ * - 私密情趣与成人玩具: Lelo F1s, Satisfyer Pro 2+, We-Vibe Chorus
+ * - 智能卫浴与离奇厨电: Kohler Numi Toilet, TOTO Washlet, Samsung Fridge, Smart Toaster, Roomba Vacuum
+ * - 离奇海外与商用机台: McDonald's Kiosk, KTV VOD, Vegas Slots, Boeing 777 IFE, Tesla Car, Porsche Taycan, PS5
+ * - 深空科考与重工重器: JWST Telescope, CERN LHC, Virginia Nuclear Submarine, NASA Rover, Spot Robot Dog
+ * - 极简廉价穷鬼硬件: Walmart $15 Stick, ESP8266 Board, Casio Calc, IKEA Desk, Quantum Random
  */
 
 export const DECOY_STORAGE_KEY = 'cloud_mail_decoy_persona';
 
 export const DECOY_CATEGORIES = [
   { key: 'all', name: '全部印籍', icon: 'solar:widget-linear' },
-  { key: 'home', name: '智能卫浴与厨电', icon: 'solar:bath-linear' },
-  { key: 'retro', name: '赛博古董与乐器', icon: 'solar:cassette-linear' },
-  { key: 'exotic', name: '离奇海外与商用', icon: 'solar:shop-2-linear' },
-  { key: 'scifi', name: '深空科考与重器', icon: 'solar:rocket-2-linear' },
-  { key: 'cheap', name: '离谱廉价穷鬼机', icon: 'solar:tag-price-linear' }
+  { key: 'retro_ancient', name: '赛博古董与已死系统', icon: 'solar:cassette-linear' },
+  { key: 'intimate', name: '私密情趣与成人玩具', icon: 'solar:heart-linear' },
+  { key: 'home_bath', name: '智能卫浴与离奇厨电', icon: 'solar:bath-linear' },
+  { key: 'exotic_public', name: '离奇海外与商用机台', icon: 'solar:shop-2-linear' },
+  { key: 'scifi_defense', name: '深空科考与重工重器', icon: 'solar:rocket-2-linear' },
+  { key: 'dirt_cheap', name: '极简廉价穷鬼硬件', icon: 'solar:tag-price-linear' }
 ];
 
 export const DECOY_PERSONAS = [
-  // ── 智能卫浴与厨电 ─────────────────────────────────────────────
+  // ── 赛博古董与已死系统 ─────────────────────────────────────────
   {
-    key: 'smart_toilet',
-    category: 'home',
-    name: '科勒 Kohler Numi 2.0 尊贵智能座便器',
-    shortName: '科勒智能马桶',
-    emoji: '🚽',
-    icon: 'solar:bath-linear',
-    badge: 'Kohler Konnect · Tizen 5.5',
-    specs: '智能暖圈 · 紫外除菌 · 环绕立体声 · 臀洗水温 38°C',
-    resolution: '480 × 800 (壁挂式触控遥控屏)',
-    chip: 'ARM Cortex-A7 卫浴专属控温微核',
-    userAgent: 'Mozilla/5.0 (Linux; Tizen 5.5; Kohler-Numi2-SmartToilet/Bidet-v2) AppleWebKit/537.36 (KHTML, like Gecko) KohlerBath/4.1 ToiletBrowser/2.0 Safari/537.36',
-    referer: 'https://iot.kohler.local/restroom/numi-bidet/status',
-    description: '向发件人传递至高震撼：用户正坐在带氛围灯和温水清洗的智能马桶上，心情舒畅地阅读邮件。'
+    key: 'nokia_n97',
+    category: 'retro_ancient',
+    name: '诺基亚 N97 侧滑盖塞班机皇 (2009)',
+    shortName: '诺基亚 N97',
+    emoji: '📱',
+    icon: 'solar:smartphone-linear',
+    badge: 'Symbian OS 9.4 · S60v5',
+    specs: '3.5" 电阻触控屏 · 侧滑全键盘 · 蔡司光学镜头',
+    resolution: '360 × 640 (16:9)',
+    chip: 'ARM11 434MHz 处理器',
+    userAgent: 'NokiaN97/21.0.045; SymbianOS/9.4; Series60/5.0 Mozilla/5.0; Profile/MIDP-2.1 Configuration/CLDC-1.1',
+    referer: 'http://wap.nokia.com/mail',
+    description: '让硅谷现代化 AI 营销系统瞬间穿越回 2009 年塞班时代，怀疑自身时空探测探针出现严重虫洞错位。'
   },
   {
-    key: 'toto_washlet',
-    category: 'home',
-    name: 'TOTO 极智卫洗丽智能坐便器 (Neorest NX2)',
-    shortName: 'TOTO 智能马桶',
-    emoji: '🧻',
-    icon: 'solar:water-sun-linear',
-    badge: 'Actilight 智炫 · Washlet OS',
-    specs: '电解除菌水 · 自动开合盖 · 暖风烘干 · 纳米喷嘴',
-    resolution: '320 × 480 (磁吸式液晶遥控板)',
-    chip: '瑞萨低功耗超静音卫浴 MCU',
-    userAgent: 'Mozilla/5.0 (TOTO-Neorest-NX2; WashletOS/3.0; Actilight-UV) AppleWebKit/534.30 (KHTML, like Gecko) TOTO-Restroom-Agent/1.0',
-    referer: 'https://washlet.toto.co.jp/neorest/cleaning-cycle',
-    description: '告诉发件方：这封邮件刚刚伴随着高压电解除菌水冲洗声，在豪华卫生间里被一览无余。'
+    key: 'blackberry_bold',
+    category: 'retro_ancient',
+    name: '黑莓 BlackBerry Bold 9900 (全键盘商务机)',
+    shortName: '黑莓 Bold 9900',
+    emoji: '📟',
+    icon: 'solar:devices-linear',
+    badge: 'BlackBerry OS 7.1 · BIS/BES',
+    specs: '经典 QWERTY 水晶全键盘 · 机械光学触控板 · 企业 BES 推送',
+    resolution: '640 × 480 (VGA 2.8")',
+    chip: '高通 Snapdragon MSM8655 (1.2GHz)',
+    userAgent: 'Mozilla/5.0 (BlackBerry; U; BlackBerry 9900; en-US) AppleWebKit/534.11+ (KHTML, like Gecko) Version/7.1.0.342 Mobile Safari/534.11+',
+    referer: 'http://bis.na.blackberry.com/client/push-mail',
+    description: '让发信方的大数据营销分析误以为：华尔街投行精英正用经典的黑莓全键盘在 2011 年飞速回信。'
   },
   {
-    key: 'smart_fridge',
-    category: 'home',
-    name: '三星 Family Hub 双开门智能冰箱',
-    shortName: '三星智能冰箱',
-    emoji: '🧊',
-    icon: 'solar:fridge-linear',
-    badge: 'Tizen 4.0 · RF28N9780SR',
-    specs: '21.5" LCD 厨房触屏 · 冰霜冷藏室模式',
-    resolution: '1080 × 1920 (竖屏)',
-    chip: 'Exynos 3250 双核处理器',
-    userAgent: 'Mozilla/5.0 (Linux; Tizen 4.0.0.8; SmartFridge-Hub-RF28N9780SR) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/2.1 Chrome/56.0.2924.87 Safari/537.36',
-    referer: 'https://hub.samsung-family-fridge.local/app/kitchen-memo',
-    description: '向发件人追踪服务器谎报：您正站在厨房双门冷藏室前一边拿冰镇饮料一边随手阅读邮件。'
+    key: 'palm_treo',
+    category: 'retro_ancient',
+    name: '掌上电脑 Palm Treo 650 (手写笔触碰电阻屏)',
+    shortName: 'Palm 掌上电脑',
+    emoji: '🖊️',
+    icon: 'solar:pen-linear',
+    badge: 'Palm OS 5.4 Garnet · 电阻屏',
+    specs: '手写笔触碰校准 · 涂鸦手写识别 Graffiti · 天线凸起小胡子',
+    resolution: '320 × 320 (正方形电阻屏)',
+    chip: 'Intel PXA270 312MHz 芯片',
+    userAgent: 'Mozilla/4.0 (compatible; MSIE 6.0; Windows 98; PalmSource/hspr-H102; Blazer/4.0) 16;320x320',
+    referer: 'http://palm.com/blazer-browser/memo-sync',
+    description: '向追踪器表明：收件人正手持金属手写笔，在 2005 年的电阻屏上用力戳击屏幕以打开邮件。'
   },
   {
-    key: 'smart_toaster',
-    category: 'home',
-    name: 'Revolution InstaGLO 触屏智能烤面包机',
-    shortName: '智能烤面包机',
-    emoji: '🍞',
-    icon: 'solar:cup-linear',
-    badge: 'Android 7.1 · InstaGLO R180',
-    specs: '全彩触控液晶屏 · 正在将全麦贝果烘烤至金黄酥脆焦香',
-    resolution: '480 × 854 (横向面包仓)',
-    chip: '联发科 MT8167 嵌入式低功耗芯片',
-    userAgent: 'Mozilla/5.0 (Linux; Android 7.1; SmartToaster-InstaGLO-R180) AppleWebKit/537.36 (KHTML, like Gecko) ToasterBrowser/1.0 BagelMode/Level-4 Safari/537.36',
-    referer: 'https://revolutioncooking.local/toaster/browning-cycle',
-    description: '硅谷历史上最经典的极客梗成真：发件人后台确信他们的邮件正在一台发热丝通红的面包机上被打开！'
+    key: 'nokia_lumia',
+    category: 'retro_ancient',
+    name: '诺基亚 Lumia 1020 (已绝版 Windows Phone 8.1)',
+    shortName: 'Lumia 1020 奥利奥',
+    emoji: '🟨',
+    icon: 'solar:camera-linear',
+    badge: 'Windows Phone 8.1 · PureView',
+    specs: '4100 万像素巨型奥利奥镜头 · 动态磁贴 · 微软彻底放弃的移动系统',
+    resolution: '768 × 1280 (AMOLED)',
+    chip: '高通骁龙 S4 双核 (1.5GHz)',
+    userAgent: 'Mozilla/5.0 (Mobile; Windows Phone 8.1; Android 4.0; ARM; Trident/7.0; Touch; rv:11.0; IEMobile/11.0; NOKIA; Lumia 1020) like iPhone OS 7_0_3 Mac OS X AppleWebKit/537 (KHTML, like Gecko) Mobile Safari/537',
+    referer: 'https://live.com/outlook-mobile/tile-sync',
+    description: '让发信方的客户端探测陷入沉思：这款搭载 4100 万像素巨型镜头且微软已经停更十年的亡灵手机从何而来？'
   },
   {
-    key: 'roomba_vacuum',
-    category: 'home',
-    name: 'iRobot Roomba 智能扫地机器人 (正在撞墙清扫)',
-    shortName: 'Roomba 扫地机',
-    emoji: '🧹',
-    icon: 'solar:refresh-circle-linear',
-    badge: 'iRobot-OS · vSLAM 视觉导航',
-    specs: '滚刷转速 1200rpm · 状态：正卡在客厅餐桌底下无法脱困',
-    resolution: '640 × 480 (地板避障红外视角)',
-    chip: 'MIPS 低功耗工控处理器',
-    userAgent: 'iRobot-Roomba-j7+/Firmware-22.29.3 (Linux; MIPS; iRobot-OS; Vacuum-Telemetry-v3)',
-    referer: 'https://cloud.irobot.local/robot/telemetry/stuck-under-sofa',
-    description: '追踪服务后台会惊愕地看到：一台正卡在沙发底下的扫地机器人居然触发了邮件打开追踪。'
-  },
-
-  // ── 赛博古董与乐器 ─────────────────────────────────────────────
-  {
-    key: 'ktv_kiosk',
-    category: 'retro',
-    name: 'KTV 巨型霓虹点歌机台 (切歌重唱中)',
-    shortName: 'KTV 自助点歌机',
-    emoji: '🎤',
-    icon: 'solar:microphone-2-linear',
-    badge: 'Windows Embedded POS · 视易VOD',
-    specs: '21.5" 油渍耐磨触屏 · 正有人在包厢破音鬼嚎《青藏高原》',
-    resolution: '1920 × 1080 (斜置点歌台)',
-    chip: 'Intel Celeron 赛扬双核工控主板',
-    userAgent: 'Mozilla/5.0 (Windows NT 6.1; WOW64; KTV-VOD-Player/Thunder-v9) AppleWebKit/537.36 (KHTML, like Gecko) KTVBrowser/3.0 Safari/537.36',
-    referer: 'http://ktv-local-vod.lan/box-888/karaoke-playlist',
-    description: '向追踪器传达包厢喧嚣：正在伴奏《死了都要爱》的高潮爆音中通过点歌台切歌并查看邮件。'
+    key: 'motorola_pager',
+    category: 'retro_ancient',
+    name: '摩托罗拉 Bravo 汉字寻呼机 (BB机单行绿光屏)',
+    shortName: '摩托罗拉寻呼机',
+    emoji: '📟',
+    icon: 'solar:bell-bing-linear',
+    badge: 'POCSAG 协议 · 150MHz 寻呼网',
+    specs: '单行绿色背光点阵液晶 · 哔哔哔高分贝蜂鸣 · 腰间塑料卡扣夹',
+    resolution: '单行 12 个汉字 (点阵字符)',
+    chip: '摩托罗拉 8 位超微型寻呼微控',
+    userAgent: 'Motorola-Bravo-Pager/POCSAG-1200 (Numeric-Alphanumeric; Beeper-Alert; MsgID-9999)',
+    referer: 'pager://127.0.0.1/radio-call-station/message-inbox',
+    description: '追踪器服务器收到来自 90 年代寻呼台的无线电报文：【江川雪速回电，邮件已收到，哔哔哔】。'
   },
   {
-    key: 'kindle_paperwhite',
-    category: 'retro',
-    name: 'Amazon Kindle Paperwhite (电子墨水屏)',
-    shortName: 'Kindle 墨水屏',
-    emoji: '📖',
-    icon: 'solar:book-linear',
-    badge: 'Kindle OS 5.14 · E-Ink Carta',
-    specs: '6" 电子墨水黑白屏 · 16 级灰度 · 翻页全屏刷新黑闪',
-    resolution: '1072 × 1448 (300 ppi 纯黑白)',
-    chip: '恩智浦 i.MX6 SoloLite (1GHz)',
-    userAgent: 'Mozilla/5.0 (X11; U; Linux armv7l like Android; en-us) AppleWebKit/538.1 (KHTML, like Gecko) Version/5.0 Safari/538.1 Kindle/5.14.2 (screen 1072x1448; text-color-mode: grayscale)',
-    referer: 'https://kindle.amazon.com/experimental-browser/bookshelf',
-    description: '让发信方的现代高饱和 CSS 营销卡片彻底卡死在 16 阶灰度墨水屏刷新残影中。'
+    key: 'tamagotchi_pet',
+    category: 'retro_ancient',
+    name: '万代电子宠物拓麻歌子 (1996 黑白像素蛋)',
+    shortName: '拓麻歌子电子宠物',
+    emoji: '🥚',
+    icon: 'solar:cat-linear',
+    badge: 'Tamagotchi OS · 3 颗实体按键',
+    specs: '32 × 16 粗糙黑白像素屏 · 饥饿度满格 · 状态：宠物正在屏幕上拉大便需铲屎',
+    resolution: '32 × 16 (单色黑白像素矩阵)',
+    chip: '4 位低频微处理器 (1.5V 纽扣电池)',
+    userAgent: 'Bandai-Tamagotchi/Gen1-1996 (4bit-MCU; 32x16-Pixel; PoopAlert-True; PetHunger-Level3)',
+    referer: 'tamagotchi://virtual-pet/clean-poop-action',
+    description: '向发件方广播离奇警报：用户在给电子鸡喂汉堡和铲大便的间隙，无意触发了追踪探针。'
   },
   {
     key: 'ipod_classic',
-    category: 'retro',
+    category: 'retro_ancient',
     name: 'Apple iPod Classic (160GB 机械硬盘微动滚轮)',
     shortName: '苹果 iPod Classic',
     emoji: '🎧',
@@ -144,7 +131,7 @@ export const DECOY_PERSONAS = [
   },
   {
     key: 'meizu_m6',
-    category: 'retro',
+    category: 'retro_ancient',
     name: '魅族 M6 miniPlayer (2006 飞利浦芯片发烧 MP3)',
     shortName: '魅族 M6 MP3',
     emoji: '🎵',
@@ -158,23 +145,8 @@ export const DECOY_PERSONAS = [
     description: '让对方的大数据画像模型瞬间梦回 2006 年高二晚自习戴耳机听周杰伦 MP3 的青葱岁月。'
   },
   {
-    key: 'nokia_n97',
-    category: 'retro',
-    name: '诺基亚 N97 侧滑盖塞班机皇 (2009)',
-    shortName: '诺基亚 N97',
-    emoji: '📱',
-    icon: 'solar:smartphone-linear',
-    badge: 'Symbian OS 9.4 · S60v5',
-    specs: '3.5" 电阻触控屏 · 侧滑全键盘 · 蔡司光学镜头',
-    resolution: '360 × 640 (16:9)',
-    chip: 'ARM11 434MHz 处理器',
-    userAgent: 'NokiaN97/21.0.045; SymbianOS/9.4; Series60/5.0 Mozilla/5.0; Profile/MIDP-2.1 Configuration/CLDC-1.1',
-    referer: 'http://wap.nokia.com/mail',
-    description: '让硅谷现代化 AI 营销系统瞬间穿越回 2009 年塞班时代，怀疑自身时空探测探针出现严重虫洞错位。'
-  },
-  {
     key: 'nintendo_3ds',
-    category: 'retro',
+    category: 'retro_ancient',
     name: '任天堂 3DS LL (裸眼 3D 双屏掌机)',
     shortName: '任天堂 3DS',
     emoji: '🎮',
@@ -187,11 +159,150 @@ export const DECOY_PERSONAS = [
     referer: 'https://netfront.nintendo.net/browser',
     description: '向发信方表明：收信人正手持 Stylus 触控笔在 3DS 下屏上一边玩宝可梦一边点击邮件链接。'
   },
+  {
+    key: 'kindle_paperwhite',
+    category: 'retro_ancient',
+    name: 'Amazon Kindle Paperwhite (电子墨水屏)',
+    shortName: 'Kindle 墨水屏',
+    emoji: '📖',
+    icon: 'solar:book-linear',
+    badge: 'Kindle OS 5.14 · E-Ink Carta',
+    specs: '6" 电子墨水黑白屏 · 16 级灰度 · 翻页全屏刷新黑闪',
+    resolution: '1072 × 1448 (300 ppi 纯黑白)',
+    chip: '恩智浦 i.MX6 SoloLite (1GHz)',
+    userAgent: 'Mozilla/5.0 (X11; U; Linux armv7l like Android; en-us) AppleWebKit/538.1 (KHTML, like Gecko) Version/5.0 Safari/538.1 Kindle/5.14.2 (screen 1072x1448; text-color-mode: grayscale)',
+    referer: 'https://kindle.amazon.com/experimental-browser/bookshelf',
+    description: '让发信方的现代高饱和 CSS 营销卡片彻底卡死在 16 阶灰度墨水屏刷新残影中。'
+  },
 
-  // ── 离奇海外与商用 ─────────────────────────────────────────────
+  // ── 私密情趣与成人玩具 ─────────────────────────────────────────
+  {
+    key: 'lelo_smart_vibe',
+    category: 'intimate',
+    name: '瑞典 Lelo F1s 极智成人按摩器 (开发者套件)',
+    shortName: 'Lelo 智能按摩器',
+    emoji: '🪶',
+    icon: 'solar:heart-linear',
+    badge: 'Lelo OS 2.1 · 双马达声波共振',
+    specs: '10 种变频震动模式 · 蓝牙 5.0 连线 · 双向共振频率 120Hz',
+    resolution: '无显示屏 (LED 呼吸指示光环)',
+    chip: 'Nordic nRF52840 低功耗蓝牙与力反馈芯片',
+    userAgent: 'Mozilla/5.0 (Linux; Lelo-OS/2.1.0; Lelo-F1s-V2-Bluetooth) AppleWebKit/537.36 (KHTML, like Gecko) LeloConnect/3.4 AdultToy-Telemetry/1.0 Frequency-120Hz',
+    referer: 'ble://lelo.app.bluetooth/device/vibration-frequency-sync',
+    description: '追踪器后台将极其震惊且尴尬地判定：收件人正一边享受瑞典 10 档变频双马达共振，一边以 120Hz 极速震动点开邮件。'
+  },
+  {
+    key: 'satisfyer_pro',
+    category: 'intimate',
+    name: '德国 Satisfyer Pro 2+ 智能空气波脉冲器',
+    shortName: 'Satisfyer 脉冲器',
+    emoji: '🫧',
+    icon: 'solar:magic-stick-linear',
+    badge: 'Air-Pulse 声波脉冲 · 异地遥控',
+    specs: '非接触式气压声波脉冲 · 远程异地情侣 App 遥控 · 全身防水磁吸充电',
+    resolution: 'App 远程联动触控面板',
+    chip: '德国 Microchip 脉冲气流高频微泵控制芯片',
+    userAgent: 'Satisfyer-Connect/4.12.0 (iOS; AirPulse-PulseWave-v3; RemoteControl-PartnerMode; WhisperQuiet-True)',
+    referer: 'https://satisfyer-cloud.de/remote/partner-control/session',
+    description: '向发件人服务器报告：邮件是在异地伴侣通过网络跨洋远程调节空气波脉冲强度时被无意识触发的。'
+  },
+  {
+    key: 'wevibe_chorus',
+    category: 'intimate',
+    name: '加拿大 We-Vibe Chorus 智能双人共振感应器',
+    shortName: 'We-Vibe 共振仪',
+    emoji: '💜',
+    icon: 'solar:star-fall-linear',
+    badge: 'We-Connect 5.8 · Touch-sense',
+    specs: 'Squeeze 智能手握压力感应器 · 越用力握越强 · 伴侣双向实时力反馈',
+    resolution: '无屏幕 (力敏电阻压力传感)',
+    chip: 'Dialog SmartBond 超微型生物电容传感器',
+    userAgent: 'We-Connect/5.8 (Android; WeVibe-Chorus-BLE; SqueezeSensor-Active; SqueezeForce-85pct)',
+    referer: 'https://we-vibe.com/we-connect/dual-vibe-telemetry',
+    description: '追踪服务算法陷入深度沉默：终端传感器反馈正处于激烈握力挤压（压力 85%）与双人互动状态。'
+  },
+
+  // ── 智能卫浴与离奇厨电 ─────────────────────────────────────────
+  {
+    key: 'smart_toilet',
+    category: 'home_bath',
+    name: '科勒 Kohler Numi 2.0 尊贵智能座便器',
+    shortName: '科勒智能马桶',
+    emoji: '🚽',
+    icon: 'solar:bath-linear',
+    badge: 'Kohler Konnect · Tizen 5.5',
+    specs: '智能暖圈 · 紫外除菌 · 环绕立体声 · 臀洗水温 38°C',
+    resolution: '480 × 800 (壁挂式触控遥控屏)',
+    chip: 'ARM Cortex-A7 卫浴专属控温微核',
+    userAgent: 'Mozilla/5.0 (Linux; Tizen 5.5; Kohler-Numi2-SmartToilet/Bidet-v2) AppleWebKit/537.36 (KHTML, like Gecko) KohlerBath/4.1 ToiletBrowser/2.0 Safari/537.36',
+    referer: 'https://iot.kohler.local/restroom/numi-bidet/status',
+    description: '向发件人传递至高震撼：用户正坐在带氛围灯和温水清洗的智能马桶上，心情舒畅地阅读邮件。'
+  },
+  {
+    key: 'toto_washlet',
+    category: 'home_bath',
+    name: 'TOTO 极智卫洗丽智能坐便器 (Neorest NX2)',
+    shortName: 'TOTO 智能马桶',
+    emoji: '🧻',
+    icon: 'solar:water-sun-linear',
+    badge: 'Actilight 智炫 · Washlet OS',
+    specs: '电解除菌水 · 自动开合盖 · 暖风烘干 · 纳米喷嘴',
+    resolution: '320 × 480 (磁吸式液晶遥控板)',
+    chip: '瑞萨低功耗超静音卫浴 MCU',
+    userAgent: 'Mozilla/5.0 (TOTO-Neorest-NX2; WashletOS/3.0; Actilight-UV) AppleWebKit/534.30 (KHTML, like Gecko) TOTO-Restroom-Agent/1.0',
+    referer: 'https://washlet.toto.co.jp/neorest/cleaning-cycle',
+    description: '告诉发件方：这封邮件刚刚伴随着高压电解除菌水冲洗声，在豪华卫生间里被一览无余。'
+  },
+  {
+    key: 'smart_fridge',
+    category: 'home_bath',
+    name: '三星 Family Hub 双开门智能冰箱',
+    shortName: '三星智能冰箱',
+    emoji: '🧊',
+    icon: 'solar:fridge-linear',
+    badge: 'Tizen 4.0 · RF28N9780SR',
+    specs: '21.5" LCD 厨房触屏 · 冰霜冷藏室模式',
+    resolution: '1080 × 1920 (竖屏)',
+    chip: 'Exynos 3250 双核处理器',
+    userAgent: 'Mozilla/5.0 (Linux; Tizen 4.0.0.8; SmartFridge-Hub-RF28N9780SR) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/2.1 Chrome/56.0.2924.87 Safari/537.36',
+    referer: 'https://hub.samsung-family-fridge.local/app/kitchen-memo',
+    description: '向发件人追踪服务器谎报：您正站在厨房双门冷藏室前一边拿冰镇饮料一边随手阅读邮件。'
+  },
+  {
+    key: 'smart_toaster',
+    category: 'home_bath',
+    name: 'Revolution InstaGLO 触屏智能烤面包机',
+    shortName: '智能烤面包机',
+    emoji: '🍞',
+    icon: 'solar:cup-linear',
+    badge: 'Android 7.1 · InstaGLO R180',
+    specs: '全彩触控液晶屏 · 正在将全麦贝果烘烤至金黄酥脆焦香',
+    resolution: '480 × 854 (横向面包仓)',
+    chip: '联发科 MT8167 嵌入式低功耗芯片',
+    userAgent: 'Mozilla/5.0 (Linux; Android 7.1; SmartToaster-InstaGLO-R180) AppleWebKit/537.36 (KHTML, like Gecko) ToasterBrowser/1.0 BagelMode/Level-4 Safari/537.36',
+    referer: 'https://revolutioncooking.local/toaster/browning-cycle',
+    description: '硅谷历史上最经典的极客梗成真：发件人后台确信他们的邮件正在一台发热丝通红的面包机上被打开！'
+  },
+  {
+    key: 'roomba_vacuum',
+    category: 'home_bath',
+    name: 'iRobot Roomba 智能扫地机器人 (正在撞墙清扫)',
+    shortName: 'Roomba 扫地机',
+    emoji: '🧹',
+    icon: 'solar:refresh-circle-linear',
+    badge: 'iRobot-OS · vSLAM 视觉导航',
+    specs: '滚刷转速 1200rpm · 状态：正卡在客厅餐桌底下无法脱困',
+    resolution: '640 × 480 (地板避障红外视角)',
+    chip: 'MIPS 低功耗工控处理器',
+    userAgent: 'iRobot-Roomba-j7+/Firmware-22.29.3 (Linux; MIPS; iRobot-OS; Vacuum-Telemetry-v3)',
+    referer: 'https://cloud.irobot.local/robot/telemetry/stuck-under-sofa',
+    description: '追踪服务后台会惊愕地看到：一台正卡在沙发底下的扫地机器人居然触发了邮件打开追踪。'
+  },
+
+  // ── 离奇海外与商用机台 ─────────────────────────────────────────
   {
     key: 'mcdonalds_kiosk',
-    category: 'exotic',
+    category: 'exotic_public',
     name: '麦当劳巨型立式自助点餐大屏 (选配套餐中)',
     shortName: '麦当劳点餐机',
     emoji: '🍟',
@@ -205,8 +316,53 @@ export const DECOY_PERSONAS = [
     description: '告诉发件方：有人正在麦当劳餐厅排队选超值套餐时，在大屏点餐机上弹出了你的邮件！'
   },
   {
+    key: 'ktv_kiosk',
+    category: 'exotic_public',
+    name: 'KTV 巨型霓虹点歌机台 (切歌重唱中)',
+    shortName: 'KTV 自助点歌机',
+    emoji: '🎤',
+    icon: 'solar:microphone-2-linear',
+    badge: 'Windows Embedded POS · 视易VOD',
+    specs: '21.5" 油渍耐磨触屏 · 正有人在包厢破音鬼嚎《青藏高原》',
+    resolution: '1920 × 1080 (斜置点歌台)',
+    chip: 'Intel Celeron 赛扬双核工控主板',
+    userAgent: 'Mozilla/5.0 (Windows NT 6.1; WOW64; KTV-VOD-Player/Thunder-v9) AppleWebKit/537.36 (KHTML, like Gecko) KTVBrowser/3.0 Safari/537.36',
+    referer: 'http://ktv-local-vod.lan/box-888/karaoke-playlist',
+    description: '向追踪器传达包厢喧嚣：正在伴奏《死了都要爱》的高潮爆音中通过点歌台切歌并查看邮件。'
+  },
+  {
+    key: 'vegas_slots',
+    category: 'exotic_public',
+    name: '拉斯维加斯 777 赌场巨型老虎机台',
+    shortName: '拉斯维加斯老虎机',
+    emoji: '🎰',
+    icon: 'solar:dollar-minimalistic-linear',
+    badge: 'IGT Advantage · 百乐宫娱乐场',
+    specs: '27" 弧形双屏 · 投币口金属叮当响 · 正在转动 777 终极大奖',
+    resolution: '1080 × 1920 (曲面屏)',
+    chip: 'AMD 嵌入式定制工控显卡主板',
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; IGT-SlotMachine/Advantage-Bonusing) AppleWebKit/537.36 (KHTML, like Gecko) CasinoKiosk/4.2 Safari/537.36',
+    referer: 'https://casino-floor.bellagio.vegas/slot/jackpot-spin',
+    description: '追踪器将监测到：邮件是在拉斯维加斯百乐宫赌场老虎机疯狂吐硬币的叮当声中被触发的。'
+  },
+  {
+    key: 'boeing_ife',
+    category: 'exotic_public',
+    name: '波音 777-300ER 经济舱后背娱乐屏 (巡航中)',
+    shortName: '波音经济舱座椅屏',
+    emoji: '✈️',
+    icon: 'solar:plain-2-linear',
+    badge: 'Panasonic eX3 · 卫星机载Wi-Fi',
+    specs: '11.6" 触摸小屏 · 正在万米高空飞越北极圈气流颠簸 · 延迟 800ms',
+    resolution: '1366 × 768',
+    chip: '飞思卡尔 i.MX6 四核航空机载系统',
+    userAgent: 'Mozilla/5.0 (Linux; Tizen 2.4; InFlight-Entertainment-Panasonic-eX3) AppleWebKit/538.1 (KHTML, like Gecko) AeroBrowser/2.1 SatelliteNet/GEO-Ka',
+    referer: 'https://in-flight.wifi.aero/portal/flight-map',
+    description: '向发件服务器表明：邮件是在万米高空飞越北极颠簸气流中，用经济舱座椅前的小触屏点开的。'
+  },
+  {
     key: 'tesla_car',
-    category: 'exotic',
+    category: 'exotic_public',
     name: '特斯拉 Model 3 车机中控大屏 (超充站充能中)',
     shortName: '特斯拉中控车机',
     emoji: '🚗',
@@ -221,7 +377,7 @@ export const DECOY_PERSONAS = [
   },
   {
     key: 'porsche_taycan',
-    category: 'exotic',
+    category: 'exotic_public',
     name: '保时捷 Taycan Turbo S 副驾独立屏幕',
     shortName: '保时捷副驾屏',
     emoji: '🏎️',
@@ -235,38 +391,8 @@ export const DECOY_PERSONAS = [
     description: '发件方系统会敬畏地发现：用户正系着赛车四点安全带以 260km/h 极速冲刺时瞥了一眼邮件。'
   },
   {
-    key: 'boeing_ife',
-    category: 'exotic',
-    name: '波音 777-300ER 经济舱后背娱乐屏 (巡航中)',
-    shortName: '波音经济舱座椅屏',
-    emoji: '✈️',
-    icon: 'solar:plain-2-linear',
-    badge: 'Panasonic eX3 · 卫星机载Wi-Fi',
-    specs: '11.6" 触摸小屏 · 正在万米高空飞越北极圈气流颠簸 · 延迟 800ms',
-    resolution: '1366 × 768',
-    chip: '飞思卡尔 i.MX6 四核航空机载系统',
-    userAgent: 'Mozilla/5.0 (Linux; Tizen 2.4; InFlight-Entertainment-Panasonic-eX3) AppleWebKit/538.1 (KHTML, like Gecko) AeroBrowser/2.1 SatelliteNet/GEO-Ka',
-    referer: 'https://in-flight.wifi.aero/portal/flight-map',
-    description: '向发件服务器表明：邮件是在万米高空飞越北极颠簸气流中，用经济舱座椅前的小触屏点开的。'
-  },
-  {
-    key: 'vegas_slots',
-    category: 'exotic',
-    name: '拉斯维加斯 777 赌场巨型老虎机台',
-    shortName: '拉斯维加斯老虎机',
-    emoji: '🎰',
-    icon: 'solar:dollar-minimalistic-linear',
-    badge: 'IGT Advantage · 百乐宫娱乐场',
-    specs: '27" 弧形双屏 · 投币口金属叮当响 · 正在转动 777 终极大奖',
-    resolution: '1080 × 1920 (曲面屏)',
-    chip: 'AMD 嵌入式定制工控显卡主板',
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; IGT-SlotMachine/Advantage-Bonusing) AppleWebKit/537.36 (KHTML, like Gecko) CasinoKiosk/4.2 Safari/537.36',
-    referer: 'https://casino-floor.bellagio.vegas/slot/jackpot-spin',
-    description: '追踪器将监测到：邮件是在拉斯维加斯百乐宫赌场老虎机疯狂吐硬币的叮当声中被触发的。'
-  },
-  {
     key: 'playstation_5',
-    category: 'exotic',
+    category: 'exotic_public',
     name: '索尼 PlayStation 5 次世代主机 (DualSense 手柄)',
     shortName: '索尼 PS5 主机',
     emoji: '🕹️',
@@ -280,10 +406,10 @@ export const DECOY_PERSONAS = [
     description: '向发件方炫耀：收信人正在客厅 85 寸电视上用 PS5 手柄摇杆极其费劲地挪动光标查看邮件。'
   },
 
-  // ── 深空科考与重器 ─────────────────────────────────────────────
+  // ── 深空科考与重工重器 ─────────────────────────────────────────
   {
     key: 'jwst_telescope',
-    category: 'scifi',
+    category: 'scifi_defense',
     name: '詹姆斯·韦伯空间望远镜 (JWST · L2 节点)',
     shortName: '詹姆斯韦伯望远镜',
     emoji: '🔭',
@@ -298,7 +424,7 @@ export const DECOY_PERSONAS = [
   },
   {
     key: 'cern_lhc',
-    category: 'scifi',
+    category: 'scifi_defense',
     name: '欧洲核子中心 CERN 强子对撞机 ATLAS 节点',
     shortName: 'CERN 强子对撞机',
     emoji: '⚛️',
@@ -313,7 +439,7 @@ export const DECOY_PERSONAS = [
   },
   {
     key: 'nuclear_submarine',
-    category: 'scifi',
+    category: 'scifi_defense',
     name: '美国弗吉尼亚级核动力潜艇水下声呐终端',
     shortName: '核动力潜艇声呐',
     emoji: '⚓',
@@ -328,7 +454,7 @@ export const DECOY_PERSONAS = [
   },
   {
     key: 'nasa_rover',
-    category: 'scifi',
+    category: 'scifi_defense',
     name: 'NASA 毅力号火星车 (Jezero Crater)',
     shortName: '毅力号火星车',
     emoji: '🚀',
@@ -343,7 +469,7 @@ export const DECOY_PERSONAS = [
   },
   {
     key: 'boston_dynamics_spot',
-    category: 'scifi',
+    category: 'scifi_defense',
     name: '波士顿动力 Spot 四足机械狗 (自主勘探巡逻)',
     shortName: '波士顿机械狗',
     emoji: '🐕',
@@ -357,10 +483,10 @@ export const DECOY_PERSONAS = [
     description: '对方的大数据后台会收到一只机械狗在化工厂巡逻时顺便接收邮件的离谱遥测信号。'
   },
 
-  // ── 离谱廉价穷鬼机 ─────────────────────────────────────────────
+  // ── 极简廉价穷鬼硬件 ─────────────────────────────────────────
   {
     key: 'walmart_onn',
-    category: 'cheap',
+    category: 'dirt_cheap',
     name: '沃尔玛 Onn. 超廉价电视棒 ($14.88 塑料棒)',
     shortName: '沃尔玛廉价电视棒',
     emoji: '📟',
@@ -375,7 +501,7 @@ export const DECOY_PERSONAS = [
   },
   {
     key: 'esp8266_board',
-    category: 'cheap',
+    category: 'dirt_cheap',
     name: '乐鑫 ESP8266 极简 Wi-Fi 单片机 ($1.8 裸板)',
     shortName: 'ESP8266 裸板单片机',
     emoji: '🪛',
@@ -390,7 +516,7 @@ export const DECOY_PERSONAS = [
   },
   {
     key: 'casio_calc',
-    category: 'cheap',
+    category: 'dirt_cheap',
     name: '卡西欧 Casio 科学函数计算器 (FX-991CNX)',
     shortName: '卡西欧计算器',
     emoji: '🔢',
@@ -405,7 +531,7 @@ export const DECOY_PERSONAS = [
   },
   {
     key: 'ikea_desk',
-    category: 'cheap',
+    category: 'dirt_cheap',
     name: '宜家 IDÅSEN 智能电动升降桌手控板',
     shortName: '宜家升降桌控板',
     emoji: '🪑',
@@ -420,13 +546,13 @@ export const DECOY_PERSONAS = [
   },
   {
     key: 'quantum_random',
-    category: 'cheap',
+    category: 'dirt_cheap',
     name: '薛定谔量子随机混淆 (Quantum Shuffler)',
     shortName: '量子随机轮换',
     emoji: '🎲',
     icon: 'solar:atom-linear',
     badge: 'Quantum Jitter · 动态坍缩',
-    specs: '全宇宙 26 种离奇奇异设备库随机坍缩 · 无法构建画像',
+    specs: '全宇宙 34 种离奇奇异设备库随机坍缩 · 无法构建画像',
     resolution: '全域随机维度',
     chip: '超对称随机数发生器',
     userAgent: '(每次诱饵发射时，在上述所有奇异设备中随机挑选一种)',
