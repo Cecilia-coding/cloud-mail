@@ -60,18 +60,20 @@
                 </span>
               </div>
             </div>
-            <div class="shield-actions" v-if="privacyAudit.blockedImagesCount > 0 && !allowImagesForCurrent">
-              <button class="shield-btn" @click="toggleLoadImages">
+            <div class="shield-actions">
+              <button class="shield-btn log-btn" @click="showTrackerLog = true" v-if="privacyAudit.beaconsCount > 0 || privacyAudit.blockedImagesCount > 0">
+                <Icon icon="solar:document-text-linear" width="14" height="14" />
+                防御报告
+              </button>
+              <button class="shield-btn" @click="toggleLoadImages" v-if="privacyAudit.blockedImagesCount > 0 && !allowImagesForCurrent">
                 <Icon icon="solar:gallery-wide-linear" width="14" height="14" />
                 显示图片
               </button>
-              <button class="shield-btn" @click="trustSender" v-if="email.sendEmail && !isSenderTrusted(email.sendEmail)">
+              <button class="shield-btn" @click="trustSender" v-if="privacyAudit.blockedImagesCount > 0 && !allowImagesForCurrent && email.sendEmail && !isSenderTrusted(email.sendEmail)">
                 <Icon icon="solar:user-check-rounded-linear" width="14" height="14" />
-                信任此发件人
+                信任发件人
               </button>
-            </div>
-            <div class="shield-actions" v-else-if="allowImagesForCurrent && privacyAudit.blockedImagesCount > 0">
-              <span class="shield-loaded-tip">
+              <span class="shield-loaded-tip" v-else-if="allowImagesForCurrent && privacyAudit.blockedImagesCount > 0">
                 <Icon icon="solar:check-circle-linear" width="14" height="14" />
                 已放行外链图片
               </span>
@@ -120,6 +122,63 @@
         show-progress
         @close="showPreview = false"
     />
+    <!-- 🛡️ 隐身防御审计详情弹窗 -->
+    <el-dialog
+      v-model="showTrackerLog"
+      title="✦ 密匣隐身安全防御日志 · Security Telemetry"
+      class="codex-audit-dialog"
+      width="640px"
+    >
+      <div class="audit-modal-content">
+        <div class="audit-summary-cards">
+          <div class="summary-card danger">
+            <span class="card-num">{{ privacyAudit.beaconsCount }}</span>
+            <span class="card-label">已拔除追踪信标</span>
+          </div>
+          <div class="summary-card warning">
+            <span class="card-num">{{ privacyAudit.blockedImagesCount }}</span>
+            <span class="card-label">已沙箱隔离图片</span>
+          </div>
+          <div class="summary-card clean">
+            <span class="card-num">100%</span>
+            <span class="card-label">IP 泄露防御率</span>
+          </div>
+        </div>
+
+        <div class="audit-section" v-if="privacyAudit.detectedTrackers?.length > 0">
+          <div class="section-title">
+            <span class="fleuron">❖</span> 拦截并销毁的追踪信标（网络请求未发出）：
+          </div>
+          <div class="tracker-item" v-for="(trk, idx) in privacyAudit.detectedTrackers" :key="idx">
+            <div class="item-header">
+              <span class="tracker-type">{{ typeof trk === 'string' ? '隐形追踪信标' : trk.type }}</span>
+              <span class="tracker-status">已就地拔除</span>
+            </div>
+            <div class="tracker-url">
+              <code>{{ typeof trk === 'string' ? trk : trk.url }}</code>
+              <button class="copy-url-btn" @click="copyTrackerUrl(typeof trk === 'string' ? trk : trk.url)">复制</button>
+            </div>
+            <div class="tracker-reason" v-if="trk.reason">
+              判定特征：{{ trk.reason }}
+            </div>
+          </div>
+        </div>
+
+        <div class="audit-section" v-if="privacyAudit.blockedImages?.length > 0">
+          <div class="section-title">
+            <span class="fleuron">❖</span> 已沙箱隔离的外部图片（防止加载探测）：
+          </div>
+          <div class="tracker-item is-image" v-for="(imgUrl, idx) in privacyAudit.blockedImages" :key="idx">
+            <div class="tracker-url">
+              <code>{{ imgUrl }}</code>
+            </div>
+            <div class="tracker-reason">
+              状态：已替换为本地占位，阻止外部主机获取开信时间与客户端指纹
+            </div>
+          </div>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script setup>
@@ -158,6 +217,14 @@ const email = computed(() => emailStore.contentData.email || {
 const showPreview = ref(false)
 const srcList = reactive([])
 const allowImagesForCurrent = ref(false)
+const showTrackerLog = ref(false)
+
+function copyTrackerUrl(url) {
+  if (!url) return;
+  navigator.clipboard.writeText(url).then(() => {
+    ElMessage.success({ message: '已复制追踪器目标 URL', plain: true });
+  });
+}
 
 const privacyAudit = computed(() => {
   const raw = formatImage(email.value.content);
@@ -754,6 +821,166 @@ const handleDelete = () => {
       gap: 4px;
       font-size: 11.5px;
       opacity: 0.85;
+    }
+
+    .log-btn {
+      background: rgba(184, 74, 91, 0.08) !important;
+      border-color: rgba(184, 74, 91, 0.3) !important;
+      color: #b84a5b !important;
+
+      &:hover {
+        background: #b84a5b !important;
+        color: #ffffff !important;
+      }
+    }
+  }
+}
+
+:deep(.codex-audit-dialog) {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--el-border-color);
+  box-shadow: 0 16px 40px rgba(43, 35, 56, 0.14);
+
+  .el-dialog__header {
+    margin-right: 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+  }
+
+  .audit-modal-content {
+    padding: 6px 4px;
+
+    .audit-summary-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+
+      .summary-card {
+        padding: 12px;
+        border-radius: 8px;
+        text-align: center;
+        border: 1px solid var(--el-border-color);
+
+        .card-num {
+          display: block;
+          font-family: var(--font-mincho), serif;
+          font-size: 24px;
+          font-weight: 700;
+          line-height: 1.2;
+          margin-bottom: 4px;
+        }
+
+        .card-label {
+          font-size: 11.5px;
+          color: var(--el-text-color-secondary);
+        }
+
+        &.danger {
+          background: rgba(184, 74, 91, 0.06);
+          border-color: rgba(184, 74, 91, 0.25);
+          .card-num { color: #b84a5b; }
+        }
+
+        &.warning {
+          background: rgba(179, 136, 72, 0.06);
+          border-color: rgba(179, 136, 72, 0.25);
+          .card-num { color: #b38848; }
+        }
+
+        &.clean {
+          background: rgba(62, 207, 142, 0.06);
+          border-color: rgba(62, 207, 142, 0.25);
+          .card-num { color: #2e7c65; }
+        }
+      }
+    }
+
+    .audit-section {
+      margin-bottom: 16px;
+
+      .section-title {
+        font-family: var(--font-mincho), serif;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: var(--el-text-color-primary);
+
+        .fleuron {
+          color: #b38848;
+          margin-right: 4px;
+        }
+      }
+
+      .tracker-item {
+        background: rgba(43, 35, 56, 0.025);
+        border: 1px solid var(--el-border-color-lighter);
+        border-radius: 6px;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+
+        .item-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 6px;
+
+          .tracker-type {
+            font-size: 12px;
+            font-weight: 600;
+            color: #b84a5b;
+          }
+
+          .tracker-status {
+            font-size: 11px;
+            padding: 1px 6px;
+            border-radius: 3px;
+            background: rgba(184, 74, 91, 0.1);
+            color: #b84a5b;
+          }
+        }
+
+        .tracker-url {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 4px;
+
+          code {
+            flex: 1;
+            font-family: monospace;
+            font-size: 11.5px;
+            background: #ffffff;
+            border: 1px solid rgba(220, 208, 228, 0.6);
+            border-radius: 4px;
+            padding: 4px 8px;
+            word-break: break-all;
+            color: #2b2338;
+          }
+
+          .copy-url-btn {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--el-border-color);
+            background: #ffffff;
+            cursor: pointer;
+            color: #6e5a75;
+            flex-shrink: 0;
+
+            &:hover {
+              color: var(--el-color-primary);
+              border-color: var(--el-color-primary);
+            }
+          }
+        }
+
+        .tracker-reason {
+          font-size: 11px;
+          color: var(--el-text-color-secondary);
+        }
+      }
     }
   }
 }

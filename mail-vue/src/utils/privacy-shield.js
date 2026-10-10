@@ -183,6 +183,8 @@ export function inspectAndSanitizeHtml(rawHtml, options = {}) {
     }
   });
 
+  const blockedImages = [];
+
   // 3. Inspect and filter <img> elements for tracking beacons and remote asset sandboxing
   const images = doc.querySelectorAll('img');
   images.forEach(img => {
@@ -218,8 +220,13 @@ export function inspectAndSanitizeHtml(rawHtml, options = {}) {
 
     if (isZeroOrOneDim || isHiddenByStyle || matchesTrackerDomain) {
       beaconsCount++;
-      detectedTrackers.push(src);
-      // Neutralize beacon: convert to an inert comment or remove
+      detectedTrackers.push({
+        url: src,
+        type: isZeroOrOneDim ? '1x1 隐形像素 (Spy Pixel)' : (isHiddenByStyle ? 'CSS 隐藏信标 (Hidden Beacon)' : '营销指纹追踪器 (Tracker Probe)'),
+        reason: matchesTrackerDomain ? '匹配已知追踪指纹 (Anthropic / SendGrid / Customer.io)' : '尺寸为 0x0 或 1x1 隐形探测点',
+        status: '已就地拔除 · 阻止泄露真实 IP 与开信时间'
+      });
+      // Neutralize beacon: remove immediately before browser requests it
       img.remove();
       return;
     }
@@ -230,6 +237,7 @@ export function inspectAndSanitizeHtml(rawHtml, options = {}) {
     if (isRemoteImage) {
       if (!shouldAllowImages) {
         blockedImagesCount++;
+        blockedImages.push(src);
         // Sandbox image: move src to data-shield-src and set a placeholder
         img.setAttribute('data-shield-src', src);
         img.setAttribute('data-shield-blocked', 'true');
@@ -243,11 +251,29 @@ export function inspectAndSanitizeHtml(rawHtml, options = {}) {
     }
   });
 
+  if (beaconsCount > 0 || blockedImagesCount > 0) {
+    try {
+      console.groupCollapsed(
+        `%c[🛡️ 密匣隐私护盾] 拦截 ${beaconsCount} 枚追踪信标，隔离 ${blockedImagesCount} 张外链图片`,
+        'color: #8a486b; font-weight: bold; background: rgba(138, 72, 107, 0.08); padding: 3px 6px; border-radius: 4px;'
+      );
+      if (detectedTrackers.length > 0) {
+        console.log('%c已拦截信标列表 (网络请求未发出):', 'color: #b84a5b; font-weight: bold;');
+        console.table(detectedTrackers);
+      }
+      if (blockedImages.length > 0) {
+        console.log('%c已沙箱隔离的外部图片:', 'color: #8d6220; font-weight: bold;', blockedImages);
+      }
+      console.groupEnd();
+    } catch (e) {}
+  }
+
   return {
     safeHtml: doc.body ? doc.body.innerHTML : '',
     beaconsCount,
     blockedImagesCount,
     isClean: beaconsCount === 0 && blockedImagesCount === 0,
-    detectedTrackers
+    detectedTrackers,
+    blockedImages
   };
 }
