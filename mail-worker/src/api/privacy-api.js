@@ -2,7 +2,13 @@ import app from '../hono/hono';
 import result from '../model/result';
 
 const PERSONA_UA_MAP = {
-  // ── 现代常规与日常真机 (含真实原生无伪装) ───────────────────────
+  // ── 现代常规与日常真机 (含绝对静默与真实原生) ───────────────────
+  silent_block: {
+    ua: '[BLOCKED] 绝对静默拦截 · 零请求出站',
+    referer: '',
+    name: '🛡️ 绝对静默拦截 (彻底禁发探针 · 零出站网络请求)',
+    role: '物理沙箱级黑洞拦截 · 0 网络出站'
+  },
   native_real: {
     ua: '',
     referer: '',
@@ -114,18 +120,36 @@ const PERSONA_UA_MAP = {
     role: 'Kindle OS 5.14 · 16阶灰度Carta水墨屏'
   },
 
-  // ── 私密情趣与成人玩具 ─────────────────────────────────────────
+  // ── 私密情趣与成人玩具 (官方真实硬件参数) ─────────────────────
   lelo_smart_vibe: {
-    ua: 'Mozilla/5.0 (Linux; Lelo-OS/2.1.0; Lelo-F1s-V2-Bluetooth) AppleWebKit/537.36 (KHTML, like Gecko) LeloConnect/3.4 AdultToy-Telemetry/1.0 Frequency-120Hz',
-    referer: 'ble://lelo.app.bluetooth/device/vibration-frequency-sync',
-    name: '瑞典 Lelo F1s 极智成人按摩器 (开发者套件)',
-    role: 'Lelo OS 2.1 · 10档双马达共振频率120Hz'
+    ua: 'LELO-F1s-V2/1.4.0 (BLE-5.0; Motor-60Hz-90Hz; Insertable-110.7mm; Weight-285g; App-Sync)',
+    referer: 'https://lelo.com/f1s-v2/app-telemetry',
+    name: '瑞典 LELO F1S V2 极智飞机杯 (官方真实规格)',
+    role: 'LELO 官方规格 · 60Hz/90Hz 双驱 · 110.7mm'
   },
   satisfyer_pro: {
-    ua: 'Satisfyer-Connect/4.12.0 (iOS; AirPulse-PulseWave-v3; RemoteControl-PartnerMode; WhisperQuiet-True)',
-    referer: 'https://satisfyer-cloud.de/remote/partner-control/session',
-    name: '德国 Satisfyer Pro 2+ 智能空气波脉冲器',
-    role: 'AirPulse · 跨洋异地情侣远程声波脉冲'
+    ua: 'Satisfyer-Connect/4.12.0 (iOS; Pro2-Gen3; Length-164mm; AirPulse-PulseWave; BLE-WhisperQuiet)',
+    referer: 'https://satisfyer.com/connect/session-control',
+    name: '德国 Satisfyer Pro 2 Generation 3 (第三代脉冲器)',
+    role: 'Air Pulse 空气波 · 16.4cm / 203g'
+  },
+  kiiroo_keon_1: {
+    ua: 'FeelConnect/3.8.1 (Kiiroo-Keon-1; Stroke-75mm; MaxSpeed-230spm; Weight-1.1kg; WiFi-BLE)',
+    referer: 'https://kiiroo.com/feelconnect/interactive-session',
+    name: 'Kiiroo Keon 1 工业级往复活塞机 (重型机械设备)',
+    role: 'FeelConnect · 75mm 冲程 / 1.1kg / 230spm'
+  },
+  kiiroo_keon_2: {
+    ua: 'FeelConnect/4.2.0 (Kiiroo-Keon-2; Stroke-95mm; Velocity-684mms; Weight-996g; DualBand-WiFi)',
+    referer: 'https://kiiroo.com/feelconnect/device-sync',
+    name: 'Kiiroo Keon 2 次世代高速活塞驱动器 (超高线速度)',
+    role: 'FeelConnect · 95mm 冲程 / 速度 684 mm/s'
+  },
+  kiiroo_sleeve: {
+    ua: 'FeelConnect/Sleeve-Telemetry (Kiiroo-Keon-Accessory; Length-190.5mm; Diameter-47mm; Weight-193g)',
+    referer: 'https://kiiroo.com/accessories/sleeve-telemetry',
+    name: 'Kiiroo Keon 工业级官方配件 (Stroker Sleeve 套件)',
+    role: 'FeelConnect · 长 190.5mm · Ø47mm · 193g'
   },
   wevibe_chorus: {
     ua: 'We-Connect/5.8 (Android; WeVibe-Chorus-BLE; SqueezeSensor-Active; SqueezeForce-85pct)',
@@ -279,10 +303,27 @@ app.post('/privacy/poison', async (c) => {
     }
 
     let selectedKey = personaKey;
-    const concreteKeys = Object.keys(PERSONA_UA_MAP).filter(k => k !== 'native_real');
+    const concreteKeys = Object.keys(PERSONA_UA_MAP).filter(k => k !== 'native_real' && k !== 'silent_block');
     if (selectedKey === 'quantum_random' || !PERSONA_UA_MAP[selectedKey]) {
       selectedKey = concreteKeys[Math.floor(Math.random() * concreteKeys.length)];
     }
+
+    if (selectedKey === 'silent_block') {
+      return c.json(result.ok({
+        targetUrl: url,
+        statusCode: 200,
+        statusText: 'Blocked by Silent Mode',
+        personaKey: 'silent_block',
+        personaName: '绝对静默拦截 (彻底禁发探针 · 零网络出站)',
+        personaRole: '物理沙箱级黑洞拦截 · 0 网络出站',
+        userAgent: '[BLOCKED] 彻底封禁外发请求，目标端点未接收到任何流量',
+        referer: '',
+        node: 'Cloudflare Edge (Local Safe Block)',
+        isSilent: true,
+        message: '已启用绝对静默模式：已在边缘节点拦截外发请求，未向追踪器发送任何探针（0 IP 泄露，0 追踪响应）。'
+      }));
+    }
+
     const persona = PERSONA_UA_MAP[selectedKey] || PERSONA_UA_MAP.smart_fridge;
 
     let targetUa = persona.ua;

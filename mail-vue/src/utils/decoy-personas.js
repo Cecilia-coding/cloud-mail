@@ -24,7 +24,22 @@ export const DECOY_CATEGORIES = [
 ];
 
 export const DECOY_PERSONAS = [
-  // ── 现代常规与日常真机 (含真实原生无伪装) ───────────────────────
+  // ── 现代常规与日常真机 (含绝对静默与真实原生) ───────────────────
+  {
+    key: 'silent_block',
+    category: 'mainstream_daily',
+    name: '🛡️ 绝对静默拦截 (彻底禁发探针 · 零出站网络请求)',
+    shortName: '绝对静默 (禁发探针)',
+    emoji: '🛡️',
+    icon: 'solar:shield-cross-bold-duotone',
+    badge: '✦ 物理阻断 · 0 外发',
+    specs: '零出站 HTTP 请求 · 100% 杜绝探针响应',
+    resolution: '完全阻断 (无网络交互)',
+    chip: '物理沙箱级黑洞拦截',
+    userAgent: '[NONE] 彻底封禁外发请求，目标端点收不到任何流量',
+    referer: '',
+    description: '最高等级安全防御。完全不向追踪器发送任何请求（无论是真实探针还是替身诱饵）。100% 杜绝反向流量，物理层面保证 0 IP 暴露、0 留痕。'
+  },
   {
     key: 'native_real',
     category: 'mainstream_daily',
@@ -298,36 +313,81 @@ export const DECOY_PERSONAS = [
     description: '让发信方的现代高饱和 CSS 营销卡片彻底卡死在 16 阶灰度墨水屏刷新残影中。'
   },
 
-  // ── 私密情趣与成人玩具 ─────────────────────────────────────────
+  // ── 私密情趣与成人玩具 (官方真实硬件参数) ─────────────────────
   {
     key: 'lelo_smart_vibe',
     category: 'intimate',
-    name: '瑞典 Lelo F1s 极智成人按摩器 (开发者套件)',
-    shortName: 'Lelo 智能按摩器',
+    name: '瑞典 LELO F1S V2 极智飞机杯 (官方真实规格)',
+    shortName: 'LELO F1S V2',
     emoji: '🪶',
     icon: 'solar:heart-linear',
-    badge: 'Lelo OS 2.1 · 双马达声波共振',
-    specs: '10 种变频震动模式 · 蓝牙 5.0 连线 · 双向共振频率 120Hz',
+    badge: 'LELO 官方规格 · 60Hz/90Hz 双驱',
+    specs: '143 × Ø71 mm · 插深 110.7 mm · 重量 285g · 官方蓝牙 5.0',
     resolution: '无显示屏 (LED 呼吸指示光环)',
-    chip: 'Nordic nRF52840 低功耗蓝牙与力反馈芯片',
-    userAgent: 'Mozilla/5.0 (Linux; Lelo-OS/2.1.0; Lelo-F1s-V2-Bluetooth) AppleWebKit/537.36 (KHTML, like Gecko) LeloConnect/3.4 AdultToy-Telemetry/1.0 Frequency-120Hz',
-    referer: 'ble://lelo.app.bluetooth/device/vibration-frequency-sync',
-    description: '追踪器后台将极其震惊且尴尬地判定：收件人正一边享受瑞典 10 档变频双马达共振，一边以 120Hz 极速震动点开邮件。'
+    chip: '双电机驱动: 60Hz 吸力电机 + 90Hz 振动电机',
+    userAgent: 'LELO-F1s-V2/1.4.0 (BLE-5.0; Motor-60Hz-90Hz; Insertable-110.7mm; Weight-285g; App-Sync)',
+    referer: 'https://lelo.com/f1s-v2/app-telemetry',
+    description: '瑞典官方真实男用飞机杯开发者硬件。官方规格长14.3cm、插深11.1cm、重285g，吸力60Hz、振动90Hz双电机。给发信方展现毫厘不差的真实硬件。'
   },
   {
     key: 'satisfyer_pro',
     category: 'intimate',
-    name: '德国 Satisfyer Pro 2+ 智能空气波脉冲器',
-    shortName: 'Satisfyer 脉冲器',
+    name: '德国 Satisfyer Pro 2 Generation 3 (第三代脉冲器)',
+    shortName: 'Satisfyer Pro 2 Gen3',
     emoji: '🫧',
     icon: 'solar:magic-stick-linear',
-    badge: 'Air-Pulse 声波脉冲 · 异地遥控',
-    specs: '非接触式气压声波脉冲 · 远程异地情侣 App 遥控 · 全身防水磁吸充电',
-    resolution: 'App 远程联动触控面板',
-    chip: '德国 Microchip 脉冲气流高频微泵控制芯片',
-    userAgent: 'Satisfyer-Connect/4.12.0 (iOS; AirPulse-PulseWave-v3; RemoteControl-PartnerMode; WhisperQuiet-True)',
-    referer: 'https://satisfyer-cloud.de/remote/partner-control/session',
-    description: '向发件人服务器报告：邮件是在异地伴侣通过网络跨洋远程调节空气波脉冲强度时被无意识触发的。'
+    badge: 'Air-Pulse 空气波 · 16.4cm / 203g',
+    specs: '164 × 65 × 46 mm (长 16.4 cm) · 203g · 液态硅胶',
+    resolution: 'Satisfyer Connect 手机触控交互',
+    chip: 'Air Pulse 空气波技术 + 振动双驱 (12档气流 + 11档振动)',
+    userAgent: 'Satisfyer-Connect/4.12.0 (iOS; Pro2-Gen3; Length-164mm; AirPulse-PulseWave; BLE-WhisperQuiet)',
+    referer: 'https://satisfyer.com/connect/session-control',
+    description: '德国官方第三代空气波脉冲吸吮器。长16.4cm、重203g、液态硅胶机身，支持 Satisfyer Connect App 异地情侣跨洋遥控。'
+  },
+  {
+    key: 'kiiroo_keon_1',
+    category: 'intimate',
+    name: 'Kiiroo Keon 1 工业级往复活塞机 (重型机械设备)',
+    shortName: 'Kiiroo Keon 1',
+    emoji: '⚙️',
+    icon: 'solar:settings-linear',
+    badge: 'FeelConnect · 75mm 冲程 / 1.1kg',
+    specs: '220 × 130 × 146 mm · 重 1.1kg · 冲程 75mm · 230 strokes/min',
+    resolution: '工业活塞机械行程',
+    chip: '高扭矩活塞步进电机 · Wi-Fi 802.11 + BLE 4.2',
+    userAgent: 'FeelConnect/3.8.1 (Kiiroo-Keon-1; Stroke-75mm; MaxSpeed-230spm; Weight-1.1kg; WiFi-BLE)',
+    referer: 'https://kiiroo.com/feelconnect/interactive-session',
+    description: '荷兰重型工业活塞设备。自重1.1公斤、冲程75毫米、每分钟230次极限往复，搭载Wi-Fi与蓝牙。让发信方误以为工业重机正在猛烈冲程中点开邮件。'
+  },
+  {
+    key: 'kiiroo_keon_2',
+    category: 'intimate',
+    name: 'Kiiroo Keon 2 次世代高速活塞驱动器 (超高线速度)',
+    shortName: 'Kiiroo Keon 2',
+    emoji: '⚡',
+    icon: 'solar:bolt-linear',
+    badge: '95mm 冲程 · 速度 684 mm/s',
+    specs: '146 × 124 × 218 mm · 重 996g · 冲程 95mm · 速度 684 mm/s',
+    resolution: '高速直线往复驱动',
+    chip: '次世代轻量化活塞驱动 · 双频 Wi-Fi 5 + BLE 5.0',
+    userAgent: 'FeelConnect/4.2.0 (Kiiroo-Keon-2; Stroke-95mm; Velocity-684mms; Weight-996g; DualBand-WiFi)',
+    referer: 'https://kiiroo.com/feelconnect/device-sync',
+    description: '次世代轻量化活塞机。冲程暴增至95毫米，极限线速度高达684毫米/秒！追踪后台直接被超音速般的物理位移震惊。'
+  },
+  {
+    key: 'kiiroo_sleeve',
+    category: 'intimate',
+    name: 'Kiiroo Keon 工业级官方配件 (Stroker Sleeve 套件)',
+    shortName: 'Kiiroo 工业配件',
+    emoji: '🔩',
+    icon: 'solar:widget-2-linear',
+    badge: '长 190.5 mm · Ø47 mm · 193g',
+    specs: '长 190.5 mm (~19.1 cm) · 直径 47 mm · 重量 193 g',
+    resolution: '高弹性医用硅胶腔体',
+    chip: '医用级人体工学柔性体 · 官方机械卡扣',
+    userAgent: 'FeelConnect/Sleeve-Telemetry (Kiiroo-Keon-Accessory; Length-190.5mm; Diameter-47mm; Weight-193g)',
+    referer: 'https://kiiroo.com/accessories/sleeve-telemetry',
+    description: '官方兼容工业套件。精确到190.5毫米长度与47毫米直径的真实医用硅胶配件，为追踪画像提供毫厘不差的物理打击。'
   },
   {
     key: 'wevibe_chorus',
@@ -723,7 +783,7 @@ export function getActivePersona() {
  */
 export function resolveConcretePersona(key = getActivePersonaKey()) {
   if (key === 'quantum_random') {
-    const pool = DECOY_PERSONAS.filter(p => p.key !== 'quantum_random' && p.key !== 'native_real');
+    const pool = DECOY_PERSONAS.filter(p => p.key !== 'quantum_random' && p.key !== 'native_real' && p.key !== 'silent_block');
     const idx = Math.floor(Math.random() * pool.length);
     return pool[idx];
   }

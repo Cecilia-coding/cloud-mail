@@ -65,13 +65,13 @@
               <el-dropdown trigger="click" @command="handleSelectPersona">
                 <button class="shield-btn persona-btn" title="点击切换反向投毒伪装设备">
                   <span class="persona-emoji">{{ activePersona.emoji }}</span>
-                  <span class="persona-label">{{ activePersona.key === 'native_real' ? '原生未替身' : `替身: ${activePersona.shortName}` }}</span>
+                  <span class="persona-label">{{ activePersona.key === 'silent_block' ? '🛡️ 绝对静默 (禁发探针)' : (activePersona.key === 'native_real' ? '原生未替身' : `替身: ${activePersona.shortName}`) }}</span>
                   <Icon icon="solar:alt-arrow-down-linear" width="11" height="11" />
                 </button>
                 <template #dropdown>
                   <el-dropdown-menu class="codex-dropdown-menu persona-dropdown">
                     <div class="dropdown-header-note">
-                      <span class="fleuron">✦</span> 设备指纹与替身矩阵 (Decoy Personas · 43 款设备)
+                      <span class="fleuron">✦</span> 设备指纹与替身矩阵 (Decoy Personas · 47 款设备)
                     </div>
                     <el-scrollbar max-height="340px">
                       <el-dropdown-item
@@ -183,12 +183,15 @@
             </div>
             <button
               class="poison-all-btn"
-              :disabled="poisonAllLoading"
+              :disabled="poisonAllLoading || activePersonaKey === 'silent_block'"
               @click="poisonAllTrackers"
             >
-              <span v-if="poisonAllLoading" class="loading-spin">✦</span>
-              <Icon v-else icon="solar:shield-star-linear" width="13" height="13" />
-              <span>以 [{{ activePersona.shortName }}] 身份一键投毒全部信标</span>
+              <span v-if="activePersonaKey === 'silent_block'">🛡️ 绝对静默中 (已封禁外发探针)</span>
+              <span v-else-if="poisonAllLoading" class="loading-spin">✦</span>
+              <template v-else>
+                <Icon icon="solar:shield-star-linear" width="13" height="13" />
+                <span>以 [{{ activePersona.shortName }}] 身份一键投毒全部信标</span>
+              </template>
             </button>
           </div>
 
@@ -202,10 +205,11 @@
               <button class="copy-url-btn" @click="copyTrackerUrl(typeof trk === 'string' ? trk : trk.url)">复制</button>
               <button
                 class="poison-single-btn"
-                :disabled="poisoningMap[typeof trk === 'string' ? trk : trk.url]"
+                :disabled="poisoningMap[typeof trk === 'string' ? trk : trk.url] || activePersonaKey === 'silent_block'"
                 @click="poisonSingleTracker(typeof trk === 'string' ? trk : trk.url)"
               >
-                <span v-if="poisoningMap[typeof trk === 'string' ? trk : trk.url]">投毒中...</span>
+                <span v-if="activePersonaKey === 'silent_block'">🛡️ 绝对静默</span>
+                <span v-else-if="poisoningMap[typeof trk === 'string' ? trk : trk.url]">投毒中...</span>
                 <span v-else-if="poisonedSuccessMap[typeof trk === 'string' ? trk : trk.url]">✓ 已投毒</span>
                 <span v-else>🎯 反向投毒</span>
               </button>
@@ -293,10 +297,13 @@ function handleSelectPersona(key) {
   activePersonaKey.value = key;
   setActivePersonaKey(key);
   const p = DECOY_PERSONAS.find(item => item.key === key);
-  ElMessage.success({
-    message: key === 'native_real' ? '✦ 已恢复为「真实本机直出 (不使用替身)」' : `✦ 已切换当前伪装身份为「${p.name}」`,
-    plain: true
-  });
+  let msg = `✦ 已切换当前伪装身份为「${p.name}」`;
+  if (key === 'silent_block') {
+    msg = '✦ 已切换为「🛡️ 绝对静默模式」：彻底封禁出站探针，0 IP 暴露，绝对安全';
+  } else if (key === 'native_real') {
+    msg = '✦ 已恢复为「真实本机直出 (不使用替身)」';
+  }
+  ElMessage.success({ message: msg, plain: true });
 }
 
 const poisoningMap = reactive({});
@@ -306,6 +313,14 @@ const poisonAllLoading = ref(false);
 
 async function poisonSingleTracker(url) {
   if (!url) return;
+  if (activePersonaKey.value === 'silent_block') {
+    ElMessage.info({
+      message: '✦ 当前处于绝对静默拦截模式：已封禁向外发送任何探测请求，保持 0 网络痕迹。',
+      plain: true
+    });
+    poisonedFeedbackMap[url] = '绝对静默模式：已在本地及边缘封禁外发请求，未向追踪器发送任何数据 (0 IP 暴露)';
+    return;
+  }
   poisoningMap[url] = true;
   try {
     const res = await fireDecoyProbe(url, activePersonaKey.value);
@@ -332,6 +347,13 @@ async function poisonSingleTracker(url) {
 async function poisonAllTrackers() {
   const trackers = privacyAudit.value.detectedTrackers || [];
   if (!trackers.length) return;
+  if (activePersonaKey.value === 'silent_block') {
+    ElMessage.info({
+      message: '✦ 当前处于绝对静默拦截模式：已禁止向目标发送任何网络探针（0 外发流量，绝对安全）。',
+      plain: true
+    });
+    return;
+  }
   poisonAllLoading.value = true;
   try {
     const promises = trackers.map(trk => {
