@@ -62,7 +62,13 @@
             </div>
             <div class="shield-actions">
               <!-- 🎭 替身伪装下拉选择器 (支持分邮箱独立花活) -->
-              <el-dropdown trigger="click" @command="handleSelectPersona">
+              <el-dropdown
+                trigger="click"
+                placement="top-end"
+                popper-class="persona-popper"
+                :popper-options="personaPopperOptions"
+                @command="handleSelectPersona"
+              >
                 <button class="shield-btn persona-btn" :class="{ 'is-custom-bound': effectivePersonaInfo.isCustom }" title="点击切换反向投毒伪装设备">
                   <span class="persona-emoji">{{ activePersona.emoji }}</span>
                   <span class="persona-label">
@@ -95,7 +101,11 @@
                       </el-dropdown-item>
                     </div>
 
-                    <el-scrollbar max-height="340px">
+                    <el-scrollbar
+                      class="persona-list-scroll"
+                      max-height="min(340px, calc(100dvh - 150px))"
+                      always
+                    >
                       <el-dropdown-item
                         v-for="p in DECOY_PERSONAS"
                         :key="p.key"
@@ -322,6 +332,28 @@ const showPreview = ref(false)
 const srcList = reactive([])
 const allowImagesForCurrent = ref(false)
 const showTrackerLog = ref(false)
+
+// Keep the large persona matrix inside the visible browser area. It prefers to
+// open upward beside the trigger and flips only when the upper side is tighter.
+const personaPopperOptions = Object.freeze({
+  strategy: 'fixed',
+  modifiers: [
+    {
+      name: 'flip',
+      options: {
+        fallbackPlacements: ['bottom-end', 'top-start', 'bottom-start'],
+        padding: 12,
+      },
+    },
+    {
+      name: 'preventOverflow',
+      options: {
+        altAxis: true,
+        padding: 12,
+      },
+    },
+  ],
+})
 
 // 📬 当前邮件所归属的邮箱地址与人格解析 (支持多重人格矩阵)
 const currentRecipientEmail = computed(() => {
@@ -1281,6 +1313,14 @@ const handleDelete = () => {
       }
     }
   }
+}
+
+:global(.persona-popper) {
+  max-width: calc(100vw - 24px);
+}
+
+:global(.persona-popper .persona-dropdown) {
+  max-width: calc(100vw - 24px);
 }
 
 :deep(.codex-audit-dialog) {
