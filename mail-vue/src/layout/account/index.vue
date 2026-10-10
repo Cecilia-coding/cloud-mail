@@ -12,7 +12,7 @@
             <Icon icon="solar:user-plus-rounded-linear" width="16" height="16"/>
           </button>
         </el-tooltip>
-        <el-tooltip content="刷新印籍列表" placement="top" :show-after="300">
+        <el-tooltip content="刷新印籍与邮件列表" placement="top" :show-after="300">
           <button class="head-btn refresh-btn" :class="{ 'is-spinning': loading }" @click="refresh" aria-label="Refresh">
             <Icon icon="solar:restart-linear" width="15" height="15"/>
           </button>
@@ -410,6 +410,11 @@ function refresh() {
   scrollbarRef.value.setScrollTop(0)
   accounts.splice(0, accounts.length)
   getAccountList()
+  // The sidebar refresh is the only persistent refresh control on mail pages.
+  // Keep the active mailbox views in sync as well as the account registry.
+  emailStore.emailScroll?.refreshList()
+  emailStore.sendScroll?.refreshList()
+  emailStore.starScroll?.refreshList()
 }
 
 function changeAccount(account) {
