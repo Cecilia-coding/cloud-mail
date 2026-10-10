@@ -71,21 +71,23 @@
                 <template #dropdown>
                   <el-dropdown-menu class="codex-dropdown-menu persona-dropdown">
                     <div class="dropdown-header-note">
-                      <span class="fleuron">✦</span> 替身人格矩阵 (Decoy Personas)
+                      <span class="fleuron">✦</span> 替身人格矩阵 (Decoy Personas · 16 设备)
                     </div>
-                    <el-dropdown-item
-                      v-for="p in DECOY_PERSONAS"
-                      :key="p.key"
-                      :command="p.key"
-                      :class="{ 'is-active-persona': activePersonaKey === p.key }"
-                    >
-                      <span class="dropdown-emoji">{{ p.emoji }}</span>
-                      <div class="dropdown-item-content">
-                        <span class="dropdown-name">{{ p.name }}</span>
-                        <span class="dropdown-badge">{{ p.badge }}</span>
-                      </div>
-                      <span v-if="activePersonaKey === p.key" class="dropdown-active-seal">✦</span>
-                    </el-dropdown-item>
+                    <el-scrollbar max-height="340px">
+                      <el-dropdown-item
+                        v-for="p in DECOY_PERSONAS"
+                        :key="p.key"
+                        :command="p.key"
+                        :class="{ 'is-active-persona': activePersonaKey === p.key }"
+                      >
+                        <span class="dropdown-emoji">{{ p.emoji }}</span>
+                        <div class="dropdown-item-content">
+                          <span class="dropdown-name">{{ p.name }}</span>
+                          <span class="dropdown-badge">{{ p.badge }}</span>
+                        </div>
+                        <span v-if="activePersonaKey === p.key" class="dropdown-active-seal">✦</span>
+                      </el-dropdown-item>
+                    </el-scrollbar>
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>

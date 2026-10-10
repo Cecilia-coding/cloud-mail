@@ -53,10 +53,25 @@
         </span>
       </div>
 
+      <!-- Category Filter Tabs -->
+      <div class="category-tabs-bar">
+        <button
+          v-for="cat in DECOY_CATEGORIES"
+          :key="cat.key"
+          class="cat-tab-btn"
+          :class="{ 'is-active': activeCategory === cat.key }"
+          @click="activeCategory = cat.key"
+        >
+          <Icon :icon="cat.icon" width="13" height="13" />
+          <span>{{ cat.name }}</span>
+          <span class="cat-count">{{ getCategoryCount(cat.key) }}</span>
+        </button>
+      </div>
+
       <!-- Personas Grid -->
       <div class="personas-grid">
         <div
-          v-for="p in DECOY_PERSONAS"
+          v-for="p in filteredPersonas"
           :key="p.key"
           class="persona-tile"
           :class="{ 'is-selected': selectedPersonaKey === p.key }"
@@ -79,8 +94,13 @@
           </div>
 
           <div class="tile-specs">
-            <Icon icon="solar:cpu-linear" width="13" height="13" />
+            <Icon icon="solar:screencast-linear" width="13" height="13" />
             <span>{{ p.specs }}</span>
+          </div>
+
+          <div class="tile-specs chip-specs" v-if="p.chip">
+            <Icon icon="solar:cpu-linear" width="13" height="13" />
+            <span>{{ p.chip }}</span>
           </div>
 
           <div class="tile-desc">
@@ -211,6 +231,7 @@ import {ElMessage, ElMessageBox} from "element-plus";
 import {Icon} from "@iconify/vue";
 import {
   DECOY_PERSONAS,
+  DECOY_CATEGORIES,
   getActivePersonaKey,
   setActivePersonaKey,
   getActivePersona
@@ -231,6 +252,17 @@ const selectedPersonaKey = ref(getActivePersonaKey())
 const activePersona = computed(() => {
   return DECOY_PERSONAS.find(p => p.key === selectedPersonaKey.value) || DECOY_PERSONAS[0];
 })
+
+const activeCategory = ref('all')
+const filteredPersonas = computed(() => {
+  if (activeCategory.value === 'all') return DECOY_PERSONAS;
+  return DECOY_PERSONAS.filter(p => p.category === activeCategory.value);
+})
+
+function getCategoryCount(catKey) {
+  if (catKey === 'all') return DECOY_PERSONAS.length;
+  return DECOY_PERSONAS.filter(p => p.category === catKey).length;
+}
 
 const defaultWebhookUrl = 'https://webhook.site/fb5e79e2-651d-4e6f-aa3d-2fc5ffe4378d'
 const defaultWebhookDashboard = 'https://webhook.site/#!/view/fb5e79e2-651d-4e6f-aa3d-2fc5ffe4378d'
@@ -578,6 +610,57 @@ function submitPwd() {
       }
     }
 
+    /* Category Filter Tabs Bar */
+    .category-tabs-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      flex-wrap: wrap;
+
+      .cat-tab-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 20px;
+        border: 1px solid var(--el-border-color, #dcd0e4);
+        background: #ffffff;
+        color: var(--el-text-color-regular, #635773);
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        font-family: var(--font-mincho), serif;
+
+        .cat-count {
+          font-size: 10.5px;
+          background: rgba(43, 35, 56, 0.06);
+          color: #9589a3;
+          padding: 1px 6px;
+          border-radius: 10px;
+          font-family: monospace;
+        }
+
+        &:hover {
+          border-color: #8a486b;
+          color: #8a486b;
+        }
+
+        &.is-active {
+          background: #8a486b;
+          color: #ffffff;
+          border-color: #8a486b;
+          box-shadow: 0 2px 8px rgba(138, 72, 107, 0.25);
+
+          .cat-count {
+            background: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+          }
+        }
+      }
+    }
+
     /* Personas Grid */
     .personas-grid {
       display: grid;
@@ -691,6 +774,12 @@ function submitPwd() {
           gap: 6px;
           font-size: 11.5px;
           color: #635773;
+
+          &.chip-specs {
+            color: #946927;
+            font-size: 11px;
+            font-family: monospace;
+          }
         }
 
         .tile-desc {
