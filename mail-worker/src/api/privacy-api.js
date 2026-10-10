@@ -12,6 +12,9 @@ const PERSONA_UA_MAP = Object.fromEntries(DECOY_PERSONAS.map(persona => [persona
   name: persona.name,
   role: persona.badge || persona.specs || '',
   category: persona.category,
+  acceptLanguage: persona.acceptLanguage || (persona.category === 'foreign_iot'
+    ? 'en-US,en;q=0.9'
+    : 'zh-CN,zh;q=0.9,en;q=0.8'),
   plausibility: persona.plausibility ?? 50,
   absurdity: persona.absurdity ?? 50
 }]));
@@ -77,9 +80,7 @@ export async function runPrivacyProbe(
     ? (body.nativeUa || requestUserAgent || PERSONA_UA_MAP.windows11_pc.ua)
     : persona.ua;
   const targetReferer = isNative ? '' : persona.referer;
-  const acceptLanguage = persona.category === 'foreign_iot'
-    ? 'en-US,en;q=0.9'
-    : 'zh-CN,zh;q=0.9,en;q=0.8';
+  const acceptLanguage = persona.acceptLanguage;
 
   let response;
   const controller = new AbortController();

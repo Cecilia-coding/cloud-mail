@@ -41,6 +41,21 @@ describe('privacy probe', () => {
     expect(fetchImpl.mock.calls[0][1].headers).not.toHaveProperty('X-Forwarded-For');
   });
 
+  it('keeps an overseas persona locale aligned with its device identity', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({ status: 200, statusText: 'OK' });
+
+    await runPrivacyProbe(
+      { url: 'https://tracker.example/lush', personaKey: 'lovense_lush_3' },
+      { fetchImpl }
+    );
+
+    expect(fetchImpl.mock.calls[0][1].headers).toMatchObject({
+      'User-Agent': expect.stringContaining('Lovense-Remote'),
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Referer': 'https://www.lovense.com/remote/my-toys/lush-3'
+    });
+  });
+
   it('selects a concrete persona close to the adaptive tuning target', () => {
     expect(resolvePersonaKey('adaptive_mix', { plausibility: 91, absurdity: 32 }, () => 0))
       .toBe('clover_station_duo');
