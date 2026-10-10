@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { runPrivacyProbe } from '../src/api/privacy-api';
+import { resolvePersonaKey, runPrivacyProbe } from '../src/api/privacy-api';
 
 describe('privacy probe', () => {
   it('blocks silent mode without making an outbound request', async () => {
@@ -35,9 +35,15 @@ describe('privacy probe', () => {
     });
     expect(fetchImpl).toHaveBeenCalledOnce();
     expect(fetchImpl.mock.calls[0][1].headers).toMatchObject({
-      'X-Decoy-Persona': 'smart_fridge',
       'User-Agent': expect.stringContaining('SmartFridge-Hub')
     });
+    expect(fetchImpl.mock.calls[0][1].headers).not.toHaveProperty('X-Decoy-Persona');
+    expect(fetchImpl.mock.calls[0][1].headers).not.toHaveProperty('X-Forwarded-For');
+  });
+
+  it('selects a concrete persona close to the adaptive tuning target', () => {
+    expect(resolvePersonaKey('adaptive_mix', { plausibility: 91, absurdity: 32 }, () => 0))
+      .toBe('clover_station_duo');
   });
 
   it('passes through the supplied browser user agent in native mode', async () => {

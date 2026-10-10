@@ -76,7 +76,7 @@
                     <div class="dropdown-header-note">
                       <div class="note-title-line">
                         <span class="fleuron">✦</span>
-                        <span class="note-title">设备指纹与替身矩阵 (47 款设备)</span>
+                        <span class="note-title">设备指纹与替身矩阵 ({{ DECOY_PERSONAS.length }} 款模式)</span>
                       </div>
                       <div class="note-target-line" v-if="currentRecipientEmail">
                         <span>配属邮箱：</span>
@@ -203,18 +203,26 @@
             <div class="section-title">
               <span class="fleuron">❖</span> 拦截并销毁的追踪信标（网络请求未发出）：
             </div>
-            <button
-              class="poison-all-btn"
-              :disabled="poisonAllLoading || activePersonaKey === 'silent_block'"
-              @click="poisonAllTrackers"
-            >
-              <span v-if="activePersonaKey === 'silent_block'">🛡️ 绝对静默中 (已封禁外发探针)</span>
-              <span v-else-if="poisonAllLoading" class="loading-spin">✦</span>
-              <template v-else>
-                <Icon icon="solar:shield-star-linear" width="13" height="13" />
-                <span>以 [{{ activePersona.shortName }}] 身份一键投毒全部信标</span>
-              </template>
-            </button>
+            <div class="poison-controls">
+              <el-select v-model="probeDelayMode" class="delay-script-select" size="small" :disabled="activePersonaKey === 'native_real'">
+                <el-option label="立即开信" value="immediate" />
+                <el-option label="延迟 7–53 分钟" value="human_short" />
+                <el-option label="延迟 30–90 分钟" value="human_long" />
+                <el-option label="延迟 2–8 小时" value="later_today" />
+              </el-select>
+              <button
+                class="poison-all-btn"
+                :disabled="poisonAllLoading || activePersonaKey === 'silent_block'"
+                @click="poisonAllTrackers"
+              >
+                <span v-if="activePersonaKey === 'silent_block'">🛡️ 绝对静默中 (已封禁外发探针)</span>
+                <span v-else-if="poisonAllLoading" class="loading-spin">✦</span>
+                <template v-else>
+                  <Icon icon="solar:shield-star-linear" width="13" height="13" />
+                  <span>{{ probeDelayMode === 'immediate' ? '立即' : '按剧本' }}投放全部替身</span>
+                </template>
+              </button>
+            </div>
           </div>
 
           <div class="tracker-item" v-for="(trk, idx) in privacyAudit.detectedTrackers" :key="idx">
@@ -232,6 +240,7 @@
               >
                 <span v-if="activePersonaKey === 'silent_block'">🛡️ 绝对静默</span>
                 <span v-else-if="poisoningMap[typeof trk === 'string' ? trk : trk.url]">投毒中...</span>
+                <span v-else-if="scheduledMap[typeof trk === 'string' ? trk : trk.url]">⏳ 已排期</span>
                 <span v-else-if="poisonedSuccessMap[typeof trk === 'string' ? trk : trk.url]">✓ 已投毒</span>
                 <span v-else>🎯 反向投毒</span>
               </button>
@@ -288,6 +297,7 @@ import {inspectAndSanitizeHtml, isSenderTrusted, addTrustedSender} from "@/utils
 import {
   DECOY_PERSONAS,
   getActivePersonaKey,
+  getDecoyTuning,
   setActivePersonaKey,
   getEffectivePersona,
   setAccountPersona,
@@ -386,8 +396,31 @@ function handleSelectPersona(key) {
 
 const poisoningMap = reactive({});
 const poisonedSuccessMap = reactive({});
+const scheduledMap = reactive({});
 const poisonedFeedbackMap = reactive({});
 const poisonAllLoading = ref(false);
+const probeDelayMode = ref(localStorage.getItem('cloud_mail_probe_delay_mode') || 'immediate');
+
+watch(probeDelayMode, value => {
+  localStorage.setItem('cloud_mail_probe_delay_mode', value);
+});
+
+function getDelayScript() {
+  if (activePersonaKey.value === 'native_real') return { delaySeconds: 0 };
+  const scripts = {
+    immediate: { delaySeconds: 0 },
+    human_short: { delayMinSeconds: 7 * 60, delayMaxSeconds: 53 * 60 },
+    human_long: { delayMinSeconds: 30 * 60, delayMaxSeconds: 90 * 60 },
+    later_today: { delayMinSeconds: 2 * 60 * 60, delayMaxSeconds: 8 * 60 * 60 }
+  };
+  return scripts[probeDelayMode.value] || scripts.immediate;
+}
+
+function formatScheduledTime(timestamp) {
+  return new Intl.DateTimeFormat('zh-CN', {
+    month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+  }).format(new Date(timestamp));
+}
 
 async function poisonSingleTracker(url) {
   if (!url) return;
@@ -401,7 +434,19 @@ async function poisonSingleTracker(url) {
   }
   poisoningMap[url] = true;
   try {
-    const probeResult = await fireDecoyProbe(url, activePersonaKey.value);
+    const probeResult = await fireDecoyProbe(url, activePersonaKey.value, {
+      tuning: getDecoyTuning(),
+      ...getDelayScript()
+    });
+    if (probeResult?.status === 'scheduled') {
+      scheduledMap[url] = true;
+      poisonedFeedbackMap[url] = `替身已潜伏，预计 ${formatScheduledTime(probeResult.scheduledFor)} 再制造开信记录`;
+      ElMessage.success({
+        message: `✦ 延迟开信剧本已排期：${formatScheduledTime(probeResult.scheduledFor)}`,
+        plain: true
+      });
+      return;
+    }
     poisonedSuccessMap[url] = true;
     const personaTitle = probeResult?.personaName || activePersona.value.name;
     const statusCode = probeResult?.statusCode ?? 200;
@@ -441,7 +486,9 @@ async function poisonAllTrackers() {
     });
     await Promise.allSettled(promises);
     ElMessage.success({
-      message: `✦ 已完成对全部 ${trackers.length} 枚追踪器的反向投毒！`,
+      message: probeDelayMode.value === 'immediate'
+        ? `✦ 已完成对全部 ${trackers.length} 枚追踪器的反向投毒！`
+        : `✦ 已为全部 ${trackers.length} 枚追踪器排好延迟开信剧本！`,
       plain: true
     });
   } finally {
@@ -1310,6 +1357,16 @@ const handleDelete = () => {
 
         .section-title {
           margin-bottom: 0;
+        }
+
+        .poison-controls {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+
+          .delay-script-select {
+            width: 148px;
+          }
         }
 
         .poison-all-btn {

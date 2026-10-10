@@ -11,6 +11,7 @@
  */
 
 export const DECOY_STORAGE_KEY = 'cloud_mail_decoy_persona';
+export const DECOY_TUNING_STORAGE_KEY = 'cloud_mail_decoy_tuning';
 
 export const DECOY_CATEGORIES = [
   { key: 'all', name: '全部印籍', icon: 'solar:widget-linear' },
@@ -18,12 +19,13 @@ export const DECOY_CATEGORIES = [
   { key: 'retro_ancient', name: '赛博古董与已死系统', icon: 'solar:cassette-linear' },
   { key: 'intimate', name: '私密情趣与成人玩具', icon: 'solar:heart-linear' },
   { key: 'home_bath', name: '智能卫浴与离奇厨电', icon: 'solar:bath-linear' },
+  { key: 'foreign_iot', name: '海外真实联网设备', icon: 'solar:global-linear' },
   { key: 'exotic_public', name: '离奇海外与商用机台', icon: 'solar:shop-2-linear' },
   { key: 'scifi_defense', name: '深空科考与重工重器', icon: 'solar:rocket-2-linear' },
   { key: 'dirt_cheap', name: '极简廉价穷鬼硬件', icon: 'solar:tag-price-linear' }
 ];
 
-export const DECOY_PERSONAS = [
+const RAW_DECOY_PERSONAS = [
   // ── 现代常规与日常真机 (含绝对静默与真实原生) ───────────────────
   {
     key: 'silent_block',
@@ -54,6 +56,23 @@ export const DECOY_PERSONAS = [
     userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
     referer: '',
     description: '完全不使用任何虚拟替身。保留你当前真实系统的 User-Agent 与特征进行透传，如同在普通邮件客户端直接打开。'
+  },
+  {
+    key: 'adaptive_mix',
+    category: 'mainstream_daily',
+    name: '伪装浓度调音台 (按可信度 × 荒谬度自适应选角)',
+    shortName: '自适应伪装调音台',
+    emoji: '🎚️',
+    icon: 'solar:settings-minimalistic-linear',
+    badge: 'Adaptive Persona · 动态选角',
+    specs: '每次从最接近双滑杆刻度的真实设备中挑选替身',
+    resolution: '由落选设备决定',
+    chip: '可信度/荒谬度双轴匹配器',
+    userAgent: '(由 Worker 根据双滑杆参数选择一个具体替身)',
+    referer: 'about:blank',
+    description: '不再手翻整本设备图鉴。Worker 会在保持硬件与请求头自洽的前提下，按你设定的可信程度与荒谬浓度挑一只最合适的替身。',
+    plausibility: 75,
+    absurdity: 45
   },
   {
     key: 'iphone_16_pro',
@@ -727,6 +746,126 @@ export const DECOY_PERSONAS = [
     referer: 'ble://ikea-home-smart/desk/standing-timer',
     description: '向发件方声称：这封信是由一张正在电动马达嗡嗡升起、提醒站立办公的办公桌主控板自动解析的。'
   },
+  // ── 海外真实联网设备：型号与能力取自厂商，开信行为属于替身剧本 ────
+  {
+    key: 'amazon_hub_locker',
+    category: 'foreign_iot',
+    name: 'Amazon Hub Locker 包裹自提柜 (柜门 42 待取)',
+    shortName: 'Amazon Hub Locker',
+    emoji: '📦',
+    icon: 'solar:box-linear',
+    badge: 'LockerOS · LTE/Wi-Fi 远程柜控',
+    specs: '触控取件终端 · 柜门 42 · 包裹已滞留 2 天',
+    resolution: '1920 × 1080 自助终端屏',
+    chip: 'Android AOSP 工业主板 · 远程柜控模组',
+    userAgent: 'Mozilla/5.0 (Linux; Android 10; Amazon-Hub-Locker Build/QP1A.190711.020) AppleWebKit/537.36 (KHTML, like Gecko) LockerOS/4.18 Chrome/109.0.0.0 Safari/537.36',
+    referer: 'https://hub.amazon.com/locker/pickup/session',
+    description: '追踪后台会看见一台真正像自助终端的 Android 柜机；笑点只藏在“包裹自提柜半夜读了邮件”这件事里。',
+    plausibility: 78,
+    absurdity: 56
+  },
+  {
+    key: 'garmin_bounce_2',
+    category: 'foreign_iot',
+    name: 'Garmin Bounce 2 儿童 LTE 智能手表 (上课模式)',
+    shortName: 'Garmin Bounce 2',
+    emoji: '⌚',
+    icon: 'solar:watch-round-linear',
+    badge: 'Garmin OS · LTE · School Mode',
+    specs: '双向通话与短信 · 实时定位 · 当前处于上课禁用模式',
+    resolution: '圆形高亮彩屏',
+    chip: 'Garmin 低功耗穿戴平台 · LTE 模组',
+    userAgent: 'Garmin-Bounce2/3.10 (GarminOS; LTE; SchoolMode-Active; AmazonMusic; Battery-64pct)',
+    referer: 'https://connect.garmin.com/junior/messages/inbox',
+    description: 'Garmin 的真实 LTE 儿童手表被伪装成邮件客户端，足够像设备遥测，又会让画像系统认真思考一个小学生为何订阅营销邮件。',
+    plausibility: 72,
+    absurdity: 60
+  },
+  {
+    key: 'zojirushi_nw_jec10',
+    category: 'foreign_iot',
+    name: 'Zojirushi NW-JEC10 压力 IH 电饭煲 (My Rice AI)',
+    shortName: '象印 My Rice 电饭煲',
+    emoji: '🍚',
+    icon: 'solar:chef-hat-linear',
+    badge: 'Pressure IH · My Rice AI',
+    specs: '5.5 杯 · AI 炊饭 · 当前状态：Extended Keep Warm',
+    resolution: '高对比度橙色菜单液晶',
+    chip: '压力/IH 加热控制器 · My Rice 学习逻辑',
+    userAgent: 'Zojirushi-NW-JEC10/MyRice-AI-2.7.4 (Pressure-IH; Capacity-5.5cup; KeepWarm-Extended)',
+    referer: 'https://www.zojirushi.com/app/my-rice/history',
+    description: '型号、容量与 My Rice 学习功能都是真的；唯一虚构的是它在保温米饭时顺便替你打开了邮件。',
+    plausibility: 64,
+    absurdity: 72
+  },
+  {
+    key: 'petlibro_granary',
+    category: 'foreign_iot',
+    name: 'PETLIBRO Granary 5L Wi-Fi 智能喂食器',
+    shortName: 'PETLIBRO Granary',
+    emoji: '🐈',
+    icon: 'solar:cat-linear',
+    badge: '5 GHz Wi-Fi · App Feeding Log',
+    specs: '5L 密封粮仓 · 每日最多 10 餐 · 第 6 餐已投喂',
+    resolution: '无屏幕 · App 远程日志',
+    chip: '低功耗 Wi-Fi 控制器 · 定量出粮电机',
+    userAgent: 'PETLIBRO-Granary/3.4.2 (WiFi-5G; Hopper-5L; MealsPerDay-10; FeedingLog-Sync)',
+    referer: 'https://app.petlibro.com/granary/feeding-log',
+    description: '一台海外真实销售的联网喂食器，状态字段也像正经 IoT 遥测；追踪器只会困惑猫为什么准时看广告。',
+    plausibility: 76,
+    absurdity: 64
+  },
+  {
+    key: 'chargepoint_home_flex',
+    category: 'foreign_iot',
+    name: 'ChargePoint Home Flex 二级家用充电桩 (48A 会话中)',
+    shortName: 'ChargePoint Home Flex',
+    emoji: '🔌',
+    icon: 'solar:bolt-circle-linear',
+    badge: 'Level 2 EVSE · 最高 50A',
+    specs: 'NACS/J1772 · 智能充电 · 当前输出 48A',
+    resolution: '环形 LED 状态灯 · 无浏览屏',
+    chip: '联网 EVSE 控制器 · OCPP 会话栈',
+    userAgent: 'ChargePoint-HomeFlex/7.16.1 (EVSE; OCPP-1.6J; Connector-NACS; Current-48A; WiFi)',
+    referer: 'https://home.chargepoint.com/charging/session',
+    description: '真实的联网家用二级充电设备，参数保持合理；它读邮件时看起来更像后台服务误打了一条遥测。',
+    plausibility: 84,
+    absurdity: 45
+  },
+  {
+    key: 'clover_station_duo',
+    category: 'foreign_iot',
+    name: 'Clover Station Duo 双屏收银终端 (等待小费确认)',
+    shortName: 'Clover Station Duo',
+    emoji: '💳',
+    icon: 'solar:card-transfer-linear',
+    badge: 'Android AOSP · 双屏 POS',
+    specs: '14 英寸商户屏 + 8 英寸顾客屏 · Wi-Fi/以太网/4G',
+    resolution: '1920 × 1080 + 1280 × 800',
+    chip: 'Qualcomm Snapdragon 660 · 2GB RAM',
+    userAgent: 'Mozilla/5.0 (Linux; Android 10; Clover Station Duo Build/QKQ1) AppleWebKit/537.36 (KHTML, like Gecko) CloverBrowser/6.4 Chrome/110.0.0.0 Safari/537.36',
+    referer: 'https://www.clover.com/dashboard/orders/receipt',
+    description: '官方确有 Android AOSP 双屏收银终端；请求头像普通 Chromium，只有设备名会把画像带去一家不存在的三明治店。',
+    plausibility: 91,
+    absurdity: 32
+  },
+  {
+    key: 'withings_body_scan',
+    category: 'foreign_iot',
+    name: 'Withings Body Scan 智能体脂秤 (访客模式称重)',
+    shortName: 'Withings Body Scan',
+    emoji: '⚖️',
+    icon: 'solar:scale-linear',
+    badge: 'Wi-Fi Sync · Segmental Body Scan',
+    specs: '身体成分与心率同步 · 当前记录：访客模式',
+    resolution: '高分辨率彩色屏',
+    chip: '多频生物电阻抗传感阵列 · Wi-Fi 同步',
+    userAgent: 'Withings-BodyScan/6.2.1 (WiFi; Segmental-BIA; HeartRate; GuestMode; Sync-Pending)',
+    referer: 'https://healthmate.withings.com/body-scan/timeline',
+    description: '医疗感很强但仍是消费级海外真产品；访客模式让它既像真实同步，又不必编造固定身体数据。',
+    plausibility: 80,
+    absurdity: 58
+  },
   {
     key: 'quantum_random',
     category: 'dirt_cheap',
@@ -743,6 +882,46 @@ export const DECOY_PERSONAS = [
     description: '每次探测触发时动态伪装成完全不同的离奇设备，让商业画像分析算法彻底陷入认知混乱。'
   }
 ];
+
+const CATEGORY_METRICS = {
+  mainstream_daily: { plausibility: 94, absurdity: 8 },
+  retro_ancient: { plausibility: 48, absurdity: 52 },
+  intimate: { plausibility: 58, absurdity: 88 },
+  home_bath: { plausibility: 72, absurdity: 68 },
+  foreign_iot: { plausibility: 80, absurdity: 55 },
+  exotic_public: { plausibility: 64, absurdity: 70 },
+  scifi_defense: { plausibility: 12, absurdity: 100 },
+  dirt_cheap: { plausibility: 58, absurdity: 62 }
+};
+
+export const DECOY_PERSONAS = RAW_DECOY_PERSONAS.map(persona => ({
+  ...CATEGORY_METRICS[persona.category],
+  ...persona
+}));
+
+export function getDecoyTuning() {
+  const fallback = { plausibility: 78, absurdity: 48 };
+  try {
+    const stored = JSON.parse(localStorage.getItem(DECOY_TUNING_STORAGE_KEY) || 'null');
+    return {
+      plausibility: Math.max(0, Math.min(100, Number(stored?.plausibility ?? fallback.plausibility))),
+      absurdity: Math.max(0, Math.min(100, Number(stored?.absurdity ?? fallback.absurdity)))
+    };
+  } catch (e) {
+    return fallback;
+  }
+}
+
+export function setDecoyTuning(tuning) {
+  const normalized = {
+    plausibility: Math.max(0, Math.min(100, Number(tuning?.plausibility ?? 78))),
+    absurdity: Math.max(0, Math.min(100, Number(tuning?.absurdity ?? 48)))
+  };
+  try {
+    localStorage.setItem(DECOY_TUNING_STORAGE_KEY, JSON.stringify(normalized));
+  } catch (e) {}
+  return normalized;
+}
 
 /**
  * Get active decoy persona key

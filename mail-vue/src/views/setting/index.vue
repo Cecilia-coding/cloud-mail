@@ -53,6 +53,33 @@
         </span>
       </div>
 
+      <div class="decoy-tuning-panel">
+        <div class="tuning-copy">
+          <span class="fleuron">❖</span>
+          <div>
+            <div class="tuning-title">伪装浓度调音台</div>
+            <div class="tuning-subtitle">刻度只参与「自适应伪装」选角；真实型号优先，荒谬感藏在设备状态里。</div>
+          </div>
+        </div>
+        <div class="tuning-axis">
+          <span class="axis-label">可信度</span>
+          <el-slider v-model="decoyTuning.plausibility" :min="0" :max="100" :show-tooltip="true" />
+          <strong>{{ decoyTuning.plausibility }}</strong>
+        </div>
+        <div class="tuning-axis">
+          <span class="axis-label">荒谬度</span>
+          <el-slider v-model="decoyTuning.absurdity" :min="0" :max="100" :show-tooltip="true" />
+          <strong>{{ decoyTuning.absurdity }}</strong>
+        </div>
+        <div class="tuning-footer">
+          <span>当前近邻：</span>
+          <span v-for="p in tuningPreview" :key="p.key" class="tuning-chip">{{ p.emoji }} {{ p.shortName }}</span>
+          <button class="adaptive-enable-btn" :class="{ active: selectedPersonaKey === 'adaptive_mix' }" @click="selectPersona('adaptive_mix')">
+            {{ selectedPersonaKey === 'adaptive_mix' ? '✦ 自适应选角已启用' : '启用自适应选角' }}
+          </button>
+        </div>
+      </div>
+
       <!-- ✦ 分邮箱独立花活配属矩阵 ✦ -->
       <div class="account-persona-matrix-box">
         <div class="matrix-top-bar">
@@ -287,6 +314,28 @@
           </div>
         </div>
       </div>
+
+      <div class="decoy-archive-box">
+        <div class="archive-header">
+          <div>
+            <span class="fleuron">❖</span>
+            <span class="archive-title">替身档案室 · 最近战绩</span>
+            <span class="archive-subtitle">发射后抹除完整追踪 URL，只留下目标域名、短指纹与结果；保留 90 天。</span>
+          </div>
+          <button class="archive-refresh-btn" :disabled="archiveLoading" @click="loadProbeArchive">{{ archiveLoading ? '读取中…' : '刷新档案' }}</button>
+        </div>
+        <div v-if="probeArchive.length" class="archive-list">
+          <div v-for="entry in probeArchive" :key="entry.probeId" class="archive-row">
+            <span class="archive-status" :class="`status-${entry.status}`">{{ archiveStatusLabel(entry.status) }}</span>
+            <span class="archive-host">{{ entry.targetHost }}</span>
+            <code>#{{ entry.fingerprint }}</code>
+            <span class="archive-persona">{{ entry.personaName || personaNameFor(entry.requestedPersonaKey) }}</span>
+            <span class="archive-time">{{ formatArchiveTime(entry.firedAt || entry.scheduledFor) }}</span>
+            <button v-if="entry.status === 'scheduled'" class="archive-cancel-btn" @click="cancelScheduledProbe(entry)">取消</button>
+          </div>
+        </div>
+        <div v-else class="archive-empty">尚无替身出勤记录。</div>
+      </div>
     </div>
 
     <div class="language">
@@ -320,7 +369,7 @@
   </div>
 </template>
 <script setup>
-import {reactive, ref, computed, onMounted, defineOptions} from 'vue'
+import {reactive, ref, computed, onMounted, defineOptions, watch} from 'vue'
 import {resetPassword, userDelete} from "@/request/my.js";
 import {useUserStore} from "@/store/user.js";
 import router from "@/router/index.js";
@@ -338,9 +387,11 @@ import {
   getActivePersona,
   getAccountPersonaMap,
   setAccountPersona,
-  removeAccountPersona
+  removeAccountPersona,
+  getDecoyTuning,
+  setDecoyTuning
 } from "@/utils/decoy-personas.js";
-import {fireDecoyProbe} from "@/request/privacy.js";
+import {fireDecoyProbe, getDecoyArchive, cancelDecoyProbe} from "@/request/privacy.js";
 
 const { t } = useI18n()
 const accountStore = useAccountStore()
@@ -353,8 +404,26 @@ const langSelect = ref(settingStore.lang)
 
 // 🎭 Decoy Personas Matrix State
 const selectedPersonaKey = ref(getActivePersonaKey())
+const decoyTuning = reactive(getDecoyTuning())
+const probeArchive = ref([])
+const archiveLoading = ref(false)
 const activePersona = computed(() => {
   return DECOY_PERSONAS.find(p => p.key === selectedPersonaKey.value) || DECOY_PERSONAS[0];
+})
+
+watch(decoyTuning, value => setDecoyTuning(value), { deep: true })
+
+const tuningPreview = computed(() => {
+  const excluded = new Set(['silent_block', 'native_real', 'adaptive_mix', 'quantum_random'])
+  return DECOY_PERSONAS
+    .filter(persona => !excluded.has(persona.key))
+    .map(persona => ({
+      ...persona,
+      distance: Math.abs(persona.plausibility - decoyTuning.plausibility)
+        + Math.abs(persona.absurdity - decoyTuning.absurdity)
+    }))
+    .sort((a, b) => a.distance - b.distance)
+    .slice(0, 3)
 })
 
 // 📬 Per-Account Persona Matrix State
@@ -456,7 +525,45 @@ function handleRemoveCustomRule(email) {
 
 onMounted(() => {
   loadUserAccounts();
+  loadProbeArchive();
 });
+
+async function loadProbeArchive() {
+  archiveLoading.value = true
+  try {
+    const response = await getDecoyArchive(40)
+    probeArchive.value = Array.isArray(response) ? response : (response?.data || [])
+  } catch (error) {
+    probeArchive.value = []
+  } finally {
+    archiveLoading.value = false
+  }
+}
+
+async function cancelScheduledProbe(entry) {
+  try {
+    await cancelDecoyProbe(entry.probeId)
+    await loadProbeArchive()
+    ElMessage.success({ message: '✦ 这只潜伏中的替身已撤回。', plain: true })
+  } catch (error) {
+    ElMessage.error({ message: error?.message || '撤回失败', plain: true })
+  }
+}
+
+function personaNameFor(key) {
+  return DECOY_PERSONAS.find(persona => persona.key === key)?.shortName || key
+}
+
+function archiveStatusLabel(status) {
+  return ({ scheduled: '潜伏中', sending: '发射中', sent: '已命中', blocked: '静默', failed: '失手', cancelled: '已撤回' })[status] || status
+}
+
+function formatArchiveTime(timestamp) {
+  if (!timestamp) return '—'
+  return new Intl.DateTimeFormat('zh-CN', {
+    month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+  }).format(new Date(timestamp))
+}
 
 const activeCategory = ref('all')
 const filteredPersonas = computed(() => {
@@ -506,7 +613,7 @@ async function dispatchTestProbe() {
 
   fireLoading.value = true
   try {
-    const probeResult = await fireDecoyProbe(testTargetUrl.value.trim(), selectedPersonaKey.value)
+    const probeResult = await fireDecoyProbe(testTargetUrl.value.trim(), selectedPersonaKey.value, { tuning: decoyTuning })
     if (probeResult) {
       lastProbeResult.value = probeResult
       if (probeResult.isSilent) {
@@ -520,6 +627,7 @@ async function dispatchTestProbe() {
           plain: true
         })
       }
+      await loadProbeArchive()
     }
   } catch (err) {
     ElMessage.error({
@@ -1519,6 +1627,175 @@ function submitPwd() {
               border-top: 1px dashed rgba(255, 255, 255, 0.1);
             }
           }
+        }
+      }
+    }
+  }
+
+  .decoy-tuning-panel,
+  .decoy-archive-box {
+    margin: 14px 0;
+    padding: 14px 16px;
+    border: 1px solid rgba(138, 72, 107, 0.22);
+    border-radius: 9px;
+    background: linear-gradient(135deg, rgba(138, 72, 107, 0.055), rgba(179, 136, 72, 0.045));
+  }
+
+  .decoy-tuning-panel {
+    .tuning-copy {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .tuning-title,
+    .archive-title {
+      font-family: var(--font-mincho), serif;
+      font-weight: 700;
+      color: var(--el-text-color-primary);
+    }
+
+    .tuning-subtitle,
+    .archive-subtitle {
+      margin-top: 3px;
+      font-size: 11px;
+      color: var(--regular-text-color);
+    }
+
+    .tuning-axis {
+      display: grid;
+      grid-template-columns: 62px minmax(160px, 1fr) 32px;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+
+      .axis-label {
+        font-weight: 600;
+      }
+
+      strong {
+        color: #8a486b;
+        text-align: right;
+      }
+    }
+
+    .tuning-footer {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+      font-size: 11px;
+    }
+
+    .tuning-chip {
+      padding: 3px 7px;
+      border: 1px solid rgba(179, 136, 72, 0.3);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.42);
+    }
+
+    .adaptive-enable-btn {
+      margin-left: auto;
+      border: 1px solid #8a486b;
+      border-radius: 5px;
+      padding: 5px 10px;
+      color: #8a486b;
+      background: transparent;
+      cursor: pointer;
+
+      &.active {
+        color: white;
+        background: #8a486b;
+      }
+    }
+  }
+
+  .decoy-archive-box {
+    .archive-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .archive-title {
+      margin-left: 5px;
+      font-family: var(--font-mincho), serif;
+      font-weight: 700;
+    }
+
+    .archive-subtitle {
+      display: block;
+      margin: 4px 0 0 20px;
+      font-size: 11px;
+      color: var(--regular-text-color);
+    }
+
+    .archive-refresh-btn,
+    .archive-cancel-btn {
+      border: 1px solid rgba(138, 72, 107, 0.38);
+      border-radius: 5px;
+      padding: 4px 9px;
+      color: #8a486b;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .archive-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .archive-row {
+      display: grid;
+      grid-template-columns: 58px minmax(110px, 1fr) 100px minmax(150px, 1.4fr) 95px auto;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 8px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.36);
+      font-size: 11px;
+
+      code {
+        color: #7b6b87;
+      }
+    }
+
+    .archive-status {
+      text-align: center;
+      padding: 2px 5px;
+      border-radius: 999px;
+      background: rgba(122, 122, 122, 0.12);
+
+      &.status-scheduled { color: #9a6b20; background: rgba(179, 136, 72, 0.14); }
+      &.status-sent { color: #24775e; background: rgba(62, 207, 142, 0.13); }
+      &.status-failed { color: #a63c4c; background: rgba(184, 74, 91, 0.13); }
+    }
+
+    .archive-host,
+    .archive-persona {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .archive-empty {
+      padding: 12px;
+      text-align: center;
+      color: var(--regular-text-color);
+      font-size: 12px;
+    }
+
+    @media (max-width: 900px) {
+      .archive-row {
+        grid-template-columns: 58px 1fr 90px;
+
+        code,
+        .archive-persona {
+          display: none;
         }
       }
     }
