@@ -53,6 +53,99 @@
         </span>
       </div>
 
+      <!-- ✦ 分邮箱独立花活配属矩阵 ✦ -->
+      <div class="account-persona-matrix-box">
+        <div class="matrix-top-bar">
+          <div class="matrix-title-group">
+            <span class="fleuron">❖</span>
+            <span class="matrix-title">分邮箱独立花活配属 · 多重人格矩阵</span>
+            <span class="matrix-subtitle">为每个邮箱单独指定不同花活（如工作邮箱配 ThinkPad，私人邮箱配 LELO 或绝对静默）</span>
+          </div>
+          <div class="custom-rule-adder">
+            <el-input
+              v-model="customRuleInput"
+              placeholder="输入邮箱地址定制花活 (如 work@company.com)"
+              class="custom-rule-input"
+              size="small"
+              clearable
+              @keyup.enter="handleAddCustomRule"
+            >
+              <template #append>
+                <el-button @click="handleAddCustomRule" size="small">➕ 定制</el-button>
+              </template>
+            </el-input>
+          </div>
+        </div>
+
+        <div class="account-rules-grid">
+          <div
+            v-for="acc in displayedAccountRules"
+            :key="acc.email"
+            class="account-rule-tile"
+            :class="{ 'is-custom-bound': acc.isCustom }"
+          >
+            <div class="acc-header">
+              <div class="acc-email-wrap">
+                <span class="acc-email-symbol">✉</span>
+                <span class="acc-email-address">{{ acc.email }}</span>
+                <span class="acc-name-chip" v-if="acc.name">({{ acc.name }})</span>
+              </div>
+              <span class="acc-state-badge" :class="acc.isCustom ? 'badge-custom' : 'badge-inherit'">
+                {{ acc.isCustom ? '✦ 专属配属' : '跟随全局默认' }}
+              </span>
+            </div>
+
+            <div class="acc-body">
+              <div class="acc-current-persona">
+                <span class="acc-emoji">{{ acc.persona.emoji }}</span>
+                <div class="acc-ptexts">
+                  <span class="acc-pname">{{ acc.persona.name }}</span>
+                  <span class="acc-pbadge">{{ acc.persona.badge }}</span>
+                </div>
+              </div>
+
+              <div class="acc-selector-row">
+                <el-select
+                  :model-value="acc.isCustom ? acc.personaKey : 'inherit_global'"
+                  class="acc-select"
+                  size="small"
+                  placeholder="选择花活"
+                  @change="(val) => handleAccountPersonaChange(acc.email, val)"
+                >
+                  <el-option label="✦ 跟随全局默认花活" value="inherit_global" />
+                  <el-option-group
+                    v-for="cat in DECOY_CATEGORIES.filter(c => c.key !== 'all')"
+                    :key="cat.key"
+                    :label="cat.name"
+                  >
+                    <el-option
+                      v-for="p in DECOY_PERSONAS.filter(item => item.category === cat.key)"
+                      :key="p.key"
+                      :label="`${p.emoji} ${p.name}`"
+                      :value="p.key"
+                    />
+                  </el-option-group>
+                </el-select>
+
+                <button
+                  v-if="acc.isCustom"
+                  class="acc-clear-btn"
+                  title="恢复为跟随全局默认"
+                  @click="handleRemoveCustomRule(acc.email)"
+                >
+                  重置
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="global-persona-header">
+        <span class="fleuron">✦</span>
+        <span>全局默认备用花活 (Global Fallback Persona · 未单独配属的邮箱统一生效)</span>
+      </div>
+
       <!-- Category Filter Tabs -->
       <div class="category-tabs-bar">
         <button
@@ -227,11 +320,11 @@
   </div>
 </template>
 <script setup>
-import {reactive, ref, computed, defineOptions} from 'vue'
+import {reactive, ref, computed, onMounted, defineOptions} from 'vue'
 import {resetPassword, userDelete} from "@/request/my.js";
 import {useUserStore} from "@/store/user.js";
 import router from "@/router/index.js";
-import {accountSetName} from "@/request/account.js";
+import {accountSetName, accountList} from "@/request/account.js";
 import {useAccountStore} from "@/store/account.js";
 import {useI18n} from "vue-i18n";
 import {useSettingStore} from "@/store/setting.js";
@@ -242,7 +335,10 @@ import {
   DECOY_CATEGORIES,
   getActivePersonaKey,
   setActivePersonaKey,
-  getActivePersona
+  getActivePersona,
+  getAccountPersonaMap,
+  setAccountPersona,
+  removeAccountPersona
 } from "@/utils/decoy-personas.js";
 import {fireDecoyProbe} from "@/request/privacy.js";
 
@@ -260,6 +356,107 @@ const selectedPersonaKey = ref(getActivePersonaKey())
 const activePersona = computed(() => {
   return DECOY_PERSONAS.find(p => p.key === selectedPersonaKey.value) || DECOY_PERSONAS[0];
 })
+
+// 📬 Per-Account Persona Matrix State
+const userAccounts = ref([]);
+const accountPersonaMap = ref(getAccountPersonaMap());
+const customRuleInput = ref('');
+
+async function loadUserAccounts() {
+  try {
+    const res = await accountList(0, 100);
+    const list = Array.isArray(res) ? res : (res?.data || []);
+    if (list && list.length) {
+      userAccounts.value = list;
+    } else if (accountStore.currentAccount?.email) {
+      userAccounts.value = [accountStore.currentAccount];
+    }
+  } catch (e) {
+    if (accountStore.currentAccount?.email) {
+      userAccounts.value = [accountStore.currentAccount];
+    }
+  }
+}
+
+const displayedAccountRules = computed(() => {
+  const map = accountPersonaMap.value;
+  const list = [];
+  const seenEmails = new Set();
+
+  // 1. All real accounts from userAccounts
+  userAccounts.value.forEach(acc => {
+    if (acc?.email) {
+      const email = acc.email.toLowerCase().trim();
+      seenEmails.add(email);
+      const isCustom = !!map[email];
+      const personaKey = map[email] || selectedPersonaKey.value;
+      const persona = DECOY_PERSONAS.find(p => p.key === personaKey) || DECOY_PERSONAS[0];
+      list.push({
+        email: acc.email,
+        name: acc.name || '',
+        isCustom,
+        personaKey,
+        persona
+      });
+    }
+  });
+
+  // 2. Custom rules added by user for aliases or extra mailboxes
+  Object.keys(map).forEach(email => {
+    if (!seenEmails.has(email)) {
+      seenEmails.add(email);
+      const personaKey = map[email];
+      const persona = DECOY_PERSONAS.find(p => p.key === personaKey) || DECOY_PERSONAS[0];
+      list.push({
+        email,
+        name: '自定义规则',
+        isCustom: true,
+        personaKey,
+        persona
+      });
+    }
+  });
+
+  return list;
+});
+
+function handleAccountPersonaChange(email, newPersonaKey) {
+  if (!email) return;
+  setAccountPersona(email, newPersonaKey);
+  accountPersonaMap.value = { ...getAccountPersonaMap() };
+  const p = DECOY_PERSONAS.find(item => item.key === newPersonaKey);
+  if (newPersonaKey === 'inherit_global' || !newPersonaKey) {
+    ElMessage.success({
+      message: `✦ 邮箱 [${email}] 已恢复为「跟随全局默认花活」`,
+      plain: true
+    });
+  } else {
+    ElMessage.success({
+      message: `✦ 邮箱 [${email}] 已绑定专属花活「${p ? p.name : newPersonaKey}」！`,
+      plain: true
+    });
+  }
+}
+
+function handleAddCustomRule() {
+  const email = customRuleInput.value.trim().toLowerCase();
+  if (!email || !email.includes('@')) {
+    ElMessage.warning({ message: '请输入有效的邮箱地址 (例如: alias@domain.com)', plain: true });
+    return;
+  }
+  handleAccountPersonaChange(email, 'smart_fridge');
+  customRuleInput.value = '';
+}
+
+function handleRemoveCustomRule(email) {
+  removeAccountPersona(email);
+  accountPersonaMap.value = { ...getAccountPersonaMap() };
+  ElMessage.success({ message: `✦ 已移除邮箱 [${email}] 的独立花活规则，已恢复跟随全局`, plain: true });
+}
+
+onMounted(() => {
+  loadUserAccounts();
+});
 
 const activeCategory = ref('all')
 const filteredPersonas = computed(() => {
@@ -628,6 +825,216 @@ function submitPwd() {
         font-size: 13px;
         flex-shrink: 0;
         margin-top: 2px;
+      }
+    }
+
+    /* 分邮箱花活配属矩阵 */
+    .account-persona-matrix-box {
+      background: #faf8fc;
+      border: 1px solid var(--el-border-color, #dcd0e4);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 10px rgba(43, 35, 56, 0.02);
+
+      .matrix-top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 14px;
+        padding-bottom: 12px;
+        border-bottom: 1px dashed var(--el-border-color-lighter, #ece4f2);
+
+        .matrix-title-group {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-wrap: wrap;
+
+          .fleuron {
+            color: #b38848;
+          }
+
+          .matrix-title {
+            font-family: var(--font-mincho), serif;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--el-text-color-primary, #2b2338);
+            letter-spacing: 0.05em;
+          }
+
+          .matrix-subtitle {
+            font-size: 11.5px;
+            color: #9589a3;
+          }
+        }
+
+        .custom-rule-adder {
+          .custom-rule-input {
+            width: 320px;
+          }
+        }
+      }
+
+      .account-rules-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 12px;
+
+        .account-rule-tile {
+          background: #ffffff;
+          border: 1px solid var(--el-border-color-lighter, #ece4f2);
+          border-radius: 8px;
+          padding: 12px 14px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+          &.is-custom-bound {
+            border-color: #8a486b;
+            background: linear-gradient(180deg, rgba(138, 72, 107, 0.03) 0%, #ffffff 100%);
+            box-shadow: 0 2px 10px rgba(138, 72, 107, 0.08);
+          }
+
+          .acc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+
+            .acc-email-wrap {
+              display: flex;
+              align-items: center;
+              gap: 6px;
+              font-size: 12px;
+              overflow: hidden;
+
+              .acc-email-symbol {
+                color: #8a486b;
+                font-size: 13px;
+              }
+
+              .acc-email-address {
+                font-family: monospace;
+                font-weight: 600;
+                color: var(--el-text-color-primary, #2b2338);
+                text-overflow: ellipsis;
+                overflow: hidden;
+                white-space: nowrap;
+              }
+
+              .acc-name-chip {
+                font-size: 11px;
+                color: #9589a3;
+              }
+            }
+
+            .acc-state-badge {
+              font-size: 10.5px;
+              padding: 1px 7px;
+              border-radius: 10px;
+              flex-shrink: 0;
+
+              &.badge-custom {
+                background: rgba(138, 72, 107, 0.12);
+                color: #8a486b;
+                font-weight: 600;
+              }
+
+              &.badge-inherit {
+                background: rgba(43, 35, 56, 0.06);
+                color: #9589a3;
+              }
+            }
+          }
+
+          .acc-body {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+
+            .acc-current-persona {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              background: #faf8fc;
+              padding: 6px 10px;
+              border-radius: 6px;
+              border: 1px solid var(--el-border-color-lighter, #ece4f2);
+
+              .acc-emoji {
+                font-size: 16px;
+              }
+
+              .acc-ptexts {
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+
+                .acc-pname {
+                  font-size: 12px;
+                  font-weight: 600;
+                  color: #2b2338;
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                }
+
+                .acc-pbadge {
+                  font-size: 10.5px;
+                  color: #946927;
+                  font-family: monospace;
+                }
+              }
+            }
+
+            .acc-selector-row {
+              display: flex;
+              gap: 6px;
+              align-items: center;
+
+              .acc-select {
+                flex: 1;
+              }
+
+              .acc-clear-btn {
+                background: none;
+                border: 1px solid #dcd0e4;
+                border-radius: 4px;
+                padding: 4px 8px;
+                font-size: 11px;
+                color: #8a486b;
+                cursor: pointer;
+                white-space: nowrap;
+                transition: all 0.2s;
+
+                &:hover {
+                  background: rgba(138, 72, 107, 0.08);
+                  border-color: #8a486b;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .global-persona-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mincho), serif;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--el-text-color-primary, #2b2338);
+      margin-bottom: 12px;
+      letter-spacing: 0.04em;
+
+      .fleuron {
+        color: #b38848;
       }
     }
 

@@ -61,18 +61,40 @@
               </div>
             </div>
             <div class="shield-actions">
-              <!-- 🎭 替身伪装下拉选择器 -->
+              <!-- 🎭 替身伪装下拉选择器 (支持分邮箱独立花活) -->
               <el-dropdown trigger="click" @command="handleSelectPersona">
-                <button class="shield-btn persona-btn" title="点击切换反向投毒伪装设备">
+                <button class="shield-btn persona-btn" :class="{ 'is-custom-bound': effectivePersonaInfo.isCustom }" title="点击切换反向投毒伪装设备">
                   <span class="persona-emoji">{{ activePersona.emoji }}</span>
-                  <span class="persona-label">{{ activePersona.key === 'silent_block' ? '🛡️ 绝对静默 (禁发探针)' : (activePersona.key === 'native_real' ? '原生未替身' : `替身: ${activePersona.shortName}`) }}</span>
+                  <span class="persona-label">
+                    <span v-if="effectivePersonaInfo.isCustom" class="custom-mailbox-tag">[{{ currentMailboxTag || '本箱' }} 专享]</span>
+                    {{ activePersona.key === 'silent_block' ? '🛡️ 绝对静默 (禁发探针)' : (activePersona.key === 'native_real' ? '原生未替身' : `替身: ${activePersona.shortName}`) }}
+                  </span>
                   <Icon icon="solar:alt-arrow-down-linear" width="11" height="11" />
                 </button>
                 <template #dropdown>
                   <el-dropdown-menu class="codex-dropdown-menu persona-dropdown">
                     <div class="dropdown-header-note">
-                      <span class="fleuron">✦</span> 设备指纹与替身矩阵 (Decoy Personas · 47 款设备)
+                      <div class="note-title-line">
+                        <span class="fleuron">✦</span>
+                        <span class="note-title">设备指纹与替身矩阵 (47 款设备)</span>
+                      </div>
+                      <div class="note-target-line" v-if="currentRecipientEmail">
+                        <span>配属邮箱：</span>
+                        <span class="target-email" :title="currentRecipientEmail">{{ currentRecipientEmail }}</span>
+                        <span class="target-badge" :class="effectivePersonaInfo.isCustom ? 'badge-custom' : 'badge-inherit'">
+                          {{ effectivePersonaInfo.isCustom ? '★ 独立专享' : '跟随全局' }}
+                        </span>
+                      </div>
                     </div>
+
+                    <!-- 如果当前邮箱是专属绑定，提供一键恢复跟随全局 -->
+                    <div v-if="effectivePersonaInfo.isCustom && currentRecipientEmail" class="dropdown-reset-bar">
+                      <el-dropdown-item command="__INHERIT_GLOBAL__" class="reset-item">
+                        <Icon icon="solar:restart-linear" width="13" height="13" />
+                        <span>恢复跟随全局默认花活</span>
+                      </el-dropdown-item>
+                    </div>
+
                     <el-scrollbar max-height="340px">
                       <el-dropdown-item
                         v-for="p in DECOY_PERSONAS"
@@ -266,7 +288,10 @@ import {inspectAndSanitizeHtml, isSenderTrusted, addTrustedSender} from "@/utils
 import {
   DECOY_PERSONAS,
   getActivePersonaKey,
-  setActivePersonaKey
+  setActivePersonaKey,
+  getEffectivePersona,
+  setAccountPersona,
+  removeAccountPersona
 } from "@/utils/decoy-personas.js";
 import {fireDecoyProbe} from "@/request/privacy.js";
 
@@ -287,23 +312,88 @@ const srcList = reactive([])
 const allowImagesForCurrent = ref(false)
 const showTrackerLog = ref(false)
 
-// 🎭 Decoy Persona & Telemetry Poisoning State
-const activePersonaKey = ref(getActivePersonaKey())
+// 📬 当前邮件所归属的邮箱地址与人格解析 (支持多重人格矩阵)
+const currentRecipientEmail = computed(() => {
+  if (accountStore.currentAccount?.email) {
+    return accountStore.currentAccount.email.toLowerCase().trim();
+  }
+  if (email.value?.recipient) {
+    try {
+      const rec = typeof email.value.recipient === 'string'
+        ? JSON.parse(email.value.recipient)
+        : email.value.recipient;
+      if (Array.isArray(rec) && rec.length > 0 && rec[0]?.address) {
+        return rec[0].address.toLowerCase().trim();
+      }
+    } catch (e) {}
+  }
+  return '';
+});
+
+const currentMailboxTag = computed(() => {
+  if (accountStore.currentAccount?.name) {
+    return accountStore.currentAccount.name;
+  }
+  if (currentRecipientEmail.value) {
+    return currentRecipientEmail.value.split('@')[0];
+  }
+  return '';
+});
+
+const effectivePersonaInfo = computed(() => {
+  return getEffectivePersona(currentRecipientEmail.value);
+});
+
+// 🎭 Decoy Persona & Telemetry Poisoning State (响应当前邮箱独立规则)
+const activePersonaKey = ref(effectivePersonaInfo.value.personaKey);
+
+watch(
+  () => [email.value?.emailId, currentRecipientEmail.value],
+  () => {
+    activePersonaKey.value = effectivePersonaInfo.value.personaKey;
+  },
+  { immediate: true }
+);
+
 const activePersona = computed(() => {
   return DECOY_PERSONAS.find(p => p.key === activePersonaKey.value) || DECOY_PERSONAS[0];
-})
+});
 
 function handleSelectPersona(key) {
-  activePersonaKey.value = key;
-  setActivePersonaKey(key);
-  const p = DECOY_PERSONAS.find(item => item.key === key);
-  let msg = `✦ 已切换当前伪装身份为「${p.name}」`;
-  if (key === 'silent_block') {
-    msg = '✦ 已切换为「🛡️ 绝对静默模式」：彻底封禁出站探针，0 IP 暴露，绝对安全';
-  } else if (key === 'native_real') {
-    msg = '✦ 已恢复为「真实本机直出 (不使用替身)」';
+  if (key === '__INHERIT_GLOBAL__') {
+    if (currentRecipientEmail.value) {
+      removeAccountPersona(currentRecipientEmail.value);
+      activePersonaKey.value = getActivePersonaKey();
+      ElMessage.success({
+        message: `✦ 邮箱 [${currentRecipientEmail.value}] 已恢复为「跟随全局默认花活」`,
+        plain: true
+      });
+    }
+    return;
   }
-  ElMessage.success({ message: msg, plain: true });
+
+  activePersonaKey.value = key;
+  const p = DECOY_PERSONAS.find(item => item.key === key);
+
+  if (currentRecipientEmail.value) {
+    setAccountPersona(currentRecipientEmail.value, key);
+    let msg = `✦ 已为当前邮箱 [${currentRecipientEmail.value}] 绑定专属花活「${p ? p.name : key}」`;
+    if (key === 'silent_block') {
+      msg = `✦ 已为当前邮箱 [${currentRecipientEmail.value}] 启用「🛡️ 绝对静默模式」：彻底封禁出站探针`;
+    } else if (key === 'native_real') {
+      msg = `✦ 已为当前邮箱 [${currentRecipientEmail.value}] 切换为「真实本机直出 (不使用替身)」`;
+    }
+    ElMessage.success({ message: msg, plain: true });
+  } else {
+    setActivePersonaKey(key);
+    let msg = `✦ 已切换全局伪装身份为「${p ? p.name : key}」`;
+    if (key === 'silent_block') {
+      msg = '✦ 已切换为「🛡️ 绝对静默模式」：彻底封禁出站探针，0 IP 暴露，绝对安全';
+    } else if (key === 'native_real') {
+      msg = '✦ 已恢复为「真实本机直出 (不使用替身)」';
+    }
+    ElMessage.success({ message: msg, plain: true });
+  }
 }
 
 const poisoningMap = reactive({});
@@ -980,6 +1070,12 @@ const handleDelete = () => {
       color: var(--el-color-primary, #8a486b) !important;
       gap: 5px !important;
 
+      &.is-custom-bound {
+        background: rgba(179, 136, 72, 0.09) !important;
+        border-color: rgba(179, 136, 72, 0.36) !important;
+        color: #9c6c22 !important;
+      }
+
       .persona-emoji {
         font-size: 13px;
         line-height: 1;
@@ -988,11 +1084,34 @@ const handleDelete = () => {
       .persona-label {
         font-weight: 600;
         letter-spacing: 0.02em;
+        display: inline-flex;
+        align-items: center;
+
+        .custom-mailbox-tag {
+          font-family: var(--font-mincho), serif;
+          font-size: 10px;
+          color: #b38848;
+          background: rgba(179, 136, 72, 0.12);
+          border: 1px solid rgba(179, 136, 72, 0.3);
+          padding: 0 4px;
+          border-radius: 3px;
+          margin-right: 5px;
+          letter-spacing: 0.04em;
+          font-weight: 600;
+          line-height: 1.4;
+        }
       }
 
       &:hover {
         background: #8a486b !important;
         color: #ffffff !important;
+        border-color: #8a486b !important;
+
+        .custom-mailbox-tag {
+          color: #fff9ea;
+          border-color: rgba(255, 255, 255, 0.4);
+          background: rgba(255, 255, 255, 0.15);
+        }
       }
     }
 
@@ -1010,19 +1129,78 @@ const handleDelete = () => {
 }
 
 :deep(.persona-dropdown) {
-  min-width: 250px;
+  min-width: 260px;
 
   .dropdown-header-note {
     font-size: 11px;
     font-family: var(--font-mincho), serif;
-    color: #b38848;
-    padding: 6px 12px 4px;
+    padding: 7px 12px 5px;
     letter-spacing: 0.05em;
     border-bottom: 1px solid var(--el-border-color-lighter);
     margin-bottom: 4px;
 
-    .fleuron {
-      margin-right: 3px;
+    .note-title-line {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: #b38848;
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+
+    .note-target-line {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10.5px;
+      color: var(--el-text-color-secondary);
+
+      .target-email {
+        font-family: var(--font-serif-italic), serif;
+        font-style: italic;
+        color: var(--el-text-color-primary);
+        max-width: 130px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .target-badge {
+        font-size: 9.5px;
+        padding: 0 4px;
+        border-radius: 2px;
+        white-space: nowrap;
+
+        &.badge-custom {
+          color: #8a486b;
+          background: rgba(138, 72, 107, 0.12);
+          border: 1px solid rgba(138, 72, 107, 0.3);
+        }
+
+        &.badge-inherit {
+          color: #7d7289;
+          background: rgba(125, 114, 137, 0.08);
+          border: 1px solid rgba(125, 114, 137, 0.2);
+        }
+      }
+    }
+  }
+
+  .dropdown-reset-bar {
+    border-bottom: 1px dashed var(--el-border-color-lighter);
+    padding-bottom: 3px;
+    margin-bottom: 3px;
+
+    .reset-item {
+      color: #8a486b !important;
+      font-size: 11.5px !important;
+      font-family: var(--font-mincho), serif;
+      gap: 6px;
+      padding: 6px 12px;
+
+      &:hover {
+        background: rgba(138, 72, 107, 0.08) !important;
+      }
     }
   }
 

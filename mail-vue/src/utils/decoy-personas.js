@@ -789,3 +789,80 @@ export function resolveConcretePersona(key = getActivePersonaKey()) {
   }
   return DECOY_PERSONAS.find(p => p.key === key) || DECOY_PERSONAS[0];
 }
+
+// ── 分邮箱独立绑定花活矩阵 (Per-Email Persona Binding Matrix) ───────────────
+export const DECOY_ACCOUNT_MAP_KEY = 'cloud_mail_account_persona_map';
+
+/**
+ * Get map of per-email persona bindings: { [email]: personaKey }
+ */
+export function getAccountPersonaMap() {
+  try {
+    const raw = localStorage.getItem(DECOY_ACCOUNT_MAP_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') {
+        return parsed;
+      }
+    }
+  } catch (e) {}
+  return {};
+}
+
+/**
+ * Set custom persona binding for a specific email address
+ */
+export function setAccountPersona(email, personaKey) {
+  if (!email) return false;
+  try {
+    const map = getAccountPersonaMap();
+    const cleanEmail = email.toLowerCase().trim();
+    if (!personaKey || personaKey === 'inherit_global') {
+      delete map[cleanEmail];
+    } else if (DECOY_PERSONAS.some(p => p.key === personaKey)) {
+      map[cleanEmail] = personaKey;
+    }
+    localStorage.setItem(DECOY_ACCOUNT_MAP_KEY, JSON.stringify(map));
+    return true;
+  } catch (e) {}
+  return false;
+}
+
+/**
+ * Remove custom persona binding for an email address (reverts to global default)
+ */
+export function removeAccountPersona(email) {
+  return setAccountPersona(email, null);
+}
+
+/**
+ * Get effective persona key for a specific email address
+ */
+export function getPersonaKeyForAccount(email) {
+  if (email) {
+    try {
+      const map = getAccountPersonaMap();
+      const cleanEmail = email.toLowerCase().trim();
+      if (map[cleanEmail] && DECOY_PERSONAS.some(p => p.key === map[cleanEmail])) {
+        return map[cleanEmail];
+      }
+    } catch (e) {}
+  }
+  return getActivePersonaKey();
+}
+
+/**
+ * Get effective persona object for a specific email address, including custom flag
+ */
+export function getEffectivePersona(email) {
+  const cleanEmail = email ? email.toLowerCase().trim() : '';
+  const isCustom = !!(cleanEmail && getAccountPersonaMap()[cleanEmail]);
+  const key = getPersonaKeyForAccount(cleanEmail);
+  const persona = DECOY_PERSONAS.find(p => p.key === key) || DECOY_PERSONAS[0];
+  return {
+    persona,
+    personaKey: key,
+    isCustom
+  };
+}
+
