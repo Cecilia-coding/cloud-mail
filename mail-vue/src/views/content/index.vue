@@ -61,6 +61,35 @@
               </div>
             </div>
             <div class="shield-actions">
+              <!-- 🎭 替身伪装下拉选择器 -->
+              <el-dropdown trigger="click" @command="handleSelectPersona">
+                <button class="shield-btn persona-btn" title="点击切换反向投毒伪装设备">
+                  <span class="persona-emoji">{{ activePersona.emoji }}</span>
+                  <span class="persona-label">替身: {{ activePersona.shortName }}</span>
+                  <Icon icon="solar:alt-arrow-down-linear" width="11" height="11" />
+                </button>
+                <template #dropdown>
+                  <el-dropdown-menu class="codex-dropdown-menu persona-dropdown">
+                    <div class="dropdown-header-note">
+                      <span class="fleuron">✦</span> 替身人格矩阵 (Decoy Personas)
+                    </div>
+                    <el-dropdown-item
+                      v-for="p in DECOY_PERSONAS"
+                      :key="p.key"
+                      :command="p.key"
+                      :class="{ 'is-active-persona': activePersonaKey === p.key }"
+                    >
+                      <span class="dropdown-emoji">{{ p.emoji }}</span>
+                      <div class="dropdown-item-content">
+                        <span class="dropdown-name">{{ p.name }}</span>
+                        <span class="dropdown-badge">{{ p.badge }}</span>
+                      </div>
+                      <span v-if="activePersonaKey === p.key" class="dropdown-active-seal">✦</span>
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+
               <button class="shield-btn log-btn" @click="showTrackerLog = true" v-if="privacyAudit.beaconsCount > 0 || privacyAudit.blockedImagesCount > 0">
                 <Icon icon="solar:document-text-linear" width="14" height="14" />
                 防御报告
@@ -146,9 +175,21 @@
         </div>
 
         <div class="audit-section" v-if="privacyAudit.detectedTrackers?.length > 0">
-          <div class="section-title">
-            <span class="fleuron">❖</span> 拦截并销毁的追踪信标（网络请求未发出）：
+          <div class="section-title-row">
+            <div class="section-title">
+              <span class="fleuron">❖</span> 拦截并销毁的追踪信标（网络请求未发出）：
+            </div>
+            <button
+              class="poison-all-btn"
+              :disabled="poisonAllLoading"
+              @click="poisonAllTrackers"
+            >
+              <span v-if="poisonAllLoading" class="loading-spin">✦</span>
+              <Icon v-else icon="solar:shield-star-linear" width="13" height="13" />
+              <span>以 [{{ activePersona.shortName }}] 身份一键投毒全部信标</span>
+            </button>
           </div>
+
           <div class="tracker-item" v-for="(trk, idx) in privacyAudit.detectedTrackers" :key="idx">
             <div class="item-header">
               <span class="tracker-type">{{ typeof trk === 'string' ? '隐形追踪信标' : trk.type }}</span>
@@ -157,6 +198,21 @@
             <div class="tracker-url">
               <code>{{ typeof trk === 'string' ? trk : trk.url }}</code>
               <button class="copy-url-btn" @click="copyTrackerUrl(typeof trk === 'string' ? trk : trk.url)">复制</button>
+              <button
+                class="poison-single-btn"
+                :disabled="poisoningMap[typeof trk === 'string' ? trk : trk.url]"
+                @click="poisonSingleTracker(typeof trk === 'string' ? trk : trk.url)"
+              >
+                <span v-if="poisoningMap[typeof trk === 'string' ? trk : trk.url]">投毒中...</span>
+                <span v-else-if="poisonedSuccessMap[typeof trk === 'string' ? trk : trk.url]">✓ 已投毒</span>
+                <span v-else>🎯 反向投毒</span>
+              </button>
+            </div>
+            <div
+              class="poison-feedback-tag"
+              v-if="poisonedFeedbackMap[typeof trk === 'string' ? trk : trk.url]"
+            >
+              <span class="fleuron">✦</span> {{ poisonedFeedbackMap[typeof trk === 'string' ? trk : trk.url] }}
             </div>
             <div class="tracker-reason" v-if="trk.reason">
               判定特征：{{ trk.reason }}
@@ -201,6 +257,12 @@ import {useUiStore} from "@/store/ui.js";
 import {useI18n} from "vue-i18n";
 import {EmailUnreadEnum} from "@/enums/email-enum.js";
 import {inspectAndSanitizeHtml, isSenderTrusted, addTrustedSender} from "@/utils/privacy-shield.js";
+import {
+  DECOY_PERSONAS,
+  getActivePersonaKey,
+  setActivePersonaKey
+} from "@/utils/decoy-personas.js";
+import {fireDecoyProbe} from "@/request/privacy.js";
 
 const uiStore = useUiStore();
 const settingStore = useSettingStore();
@@ -218,6 +280,69 @@ const showPreview = ref(false)
 const srcList = reactive([])
 const allowImagesForCurrent = ref(false)
 const showTrackerLog = ref(false)
+
+// 🎭 Decoy Persona & Telemetry Poisoning State
+const activePersonaKey = ref(getActivePersonaKey())
+const activePersona = computed(() => {
+  return DECOY_PERSONAS.find(p => p.key === activePersonaKey.value) || DECOY_PERSONAS[0];
+})
+
+function handleSelectPersona(key) {
+  activePersonaKey.value = key;
+  setActivePersonaKey(key);
+  const p = DECOY_PERSONAS.find(item => item.key === key);
+  ElMessage.success({
+    message: `✦ 已切换当前伪装身份为「${p.name}」`,
+    plain: true
+  });
+}
+
+const poisoningMap = reactive({});
+const poisonedSuccessMap = reactive({});
+const poisonedFeedbackMap = reactive({});
+const poisonAllLoading = ref(false);
+
+async function poisonSingleTracker(url) {
+  if (!url) return;
+  poisoningMap[url] = true;
+  try {
+    const res = await fireDecoyProbe(url, activePersonaKey.value);
+    poisonedSuccessMap[url] = true;
+    const personaTitle = res?.data?.personaName || activePersona.value.name;
+    const uaSnippet = res?.data?.userAgent ? (res.data.userAgent.slice(0, 48) + '...') : '';
+    poisonedFeedbackMap[url] = `假遥测已送达！目标后台记录设备：${personaTitle} (HTTP ${res?.data?.statusCode || 200})`;
+    ElMessage.success({
+      message: `✦ 诱饵已从 Cloudflare 边缘送达！目标记录为「${personaTitle}」`,
+      plain: true
+    });
+  } catch (err) {
+    ElMessage.error({
+      message: '投毒失败: ' + (err?.message || '网络异常'),
+      plain: true
+    });
+  } finally {
+    poisoningMap[url] = false;
+  }
+}
+
+async function poisonAllTrackers() {
+  const trackers = privacyAudit.value.detectedTrackers || [];
+  if (!trackers.length) return;
+  poisonAllLoading.value = true;
+  try {
+    const promises = trackers.map(trk => {
+      const url = typeof trk === 'string' ? trk : trk.url;
+      return poisonSingleTracker(url);
+    });
+    await Promise.allSettled(promises);
+    ElMessage.success({
+      message: `✦ 已完成对全部 ${trackers.length} 枚追踪器的反向投毒！`,
+      plain: true
+    });
+  } finally {
+    poisonAllLoading.value = false;
+  }
+}
 
 function copyTrackerUrl(url) {
   if (!url) return;
@@ -823,6 +948,28 @@ const handleDelete = () => {
       opacity: 0.85;
     }
 
+    .persona-btn {
+      background: rgba(138, 72, 107, 0.08) !important;
+      border-color: rgba(138, 72, 107, 0.3) !important;
+      color: var(--el-color-primary, #8a486b) !important;
+      gap: 5px !important;
+
+      .persona-emoji {
+        font-size: 13px;
+        line-height: 1;
+      }
+
+      .persona-label {
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
+
+      &:hover {
+        background: #8a486b !important;
+        color: #ffffff !important;
+      }
+    }
+
     .log-btn {
       background: rgba(184, 74, 91, 0.08) !important;
       border-color: rgba(184, 74, 91, 0.3) !important;
@@ -831,6 +978,66 @@ const handleDelete = () => {
       &:hover {
         background: #b84a5b !important;
         color: #ffffff !important;
+      }
+    }
+  }
+}
+
+:deep(.persona-dropdown) {
+  min-width: 250px;
+
+  .dropdown-header-note {
+    font-size: 11px;
+    font-family: var(--font-mincho), serif;
+    color: #b38848;
+    padding: 6px 12px 4px;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+    margin-bottom: 4px;
+
+    .fleuron {
+      margin-right: 3px;
+    }
+  }
+
+  .el-dropdown-menu__item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+
+    .dropdown-emoji {
+      font-size: 15px;
+      line-height: 1;
+    }
+
+    .dropdown-item-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+
+      .dropdown-name {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--el-text-color-primary);
+      }
+
+      .dropdown-badge {
+        font-size: 10px;
+        color: #9589a3;
+      }
+    }
+
+    .dropdown-active-seal {
+      color: #8a486b;
+      font-weight: bold;
+    }
+
+    &.is-active-persona {
+      background: rgba(138, 72, 107, 0.08);
+
+      .dropdown-name {
+        color: #8a486b;
       }
     }
   }
@@ -899,6 +1106,48 @@ const handleDelete = () => {
 
     .audit-section {
       margin-bottom: 16px;
+
+      .section-title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+        gap: 8px;
+
+        .section-title {
+          margin-bottom: 0;
+        }
+
+        .poison-all-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 11px;
+          padding: 4px 10px;
+          border-radius: 4px;
+          border: 1px solid #8a486b;
+          background: #8a486b;
+          color: #ffffff;
+          cursor: pointer;
+          font-weight: 600;
+          transition: all 0.2s ease;
+
+          &:hover:not(:disabled) {
+            background: #723755;
+            box-shadow: 0 2px 8px rgba(138, 72, 107, 0.25);
+          }
+
+          &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+          }
+
+          .loading-spin {
+            animation: spin 1s infinite linear;
+          }
+        }
+      }
 
       .section-title {
         font-family: var(--font-mincho), serif;
@@ -973,6 +1222,49 @@ const handleDelete = () => {
               color: var(--el-color-primary);
               border-color: var(--el-color-primary);
             }
+          }
+
+          .poison-single-btn {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(138, 72, 107, 0.35);
+            background: rgba(138, 72, 107, 0.08);
+            cursor: pointer;
+            color: #8a486b;
+            font-weight: 600;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            transition: all 0.15s ease;
+
+            &:hover:not(:disabled) {
+              background: #8a486b;
+              color: #ffffff;
+            }
+
+            &:disabled {
+              opacity: 0.6;
+              cursor: not-allowed;
+            }
+          }
+        }
+
+        .poison-feedback-tag {
+          font-size: 11px;
+          background: rgba(62, 207, 142, 0.1);
+          border: 1px solid rgba(62, 207, 142, 0.3);
+          color: #216e53;
+          padding: 4px 8px;
+          border-radius: 4px;
+          margin-bottom: 4px;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+
+          .fleuron {
+            color: #216e53;
           }
         }
 
