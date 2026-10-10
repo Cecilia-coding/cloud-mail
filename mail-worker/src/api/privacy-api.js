@@ -2,13 +2,7 @@ import app from '../hono/hono';
 import result from '../model/result';
 
 const PERSONA_UA_MAP = {
-  // 智能卫浴与家电
-  smart_fridge: {
-    ua: 'Mozilla/5.0 (Linux; Tizen 4.0.0.8; SmartFridge-Hub-RF28N9780SR) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/2.1 Chrome/56.0.2924.87 Safari/537.36',
-    referer: 'https://hub.samsung-family-fridge.local/app/kitchen-memo',
-    name: '三星 Family Hub 双开门智能冰箱',
-    role: 'Tizen 4.0 · 21.5寸冷藏室厨房大屏'
-  },
+  // ── 智能卫浴与厨电 ─────────────────────────────────────────────
   smart_toilet: {
     ua: 'Mozilla/5.0 (Linux; Tizen 5.5; Kohler-Numi2-SmartToilet/Bidet-v2) AppleWebKit/537.36 (KHTML, like Gecko) KohlerBath/4.1 ToiletBrowser/2.0 Safari/537.36',
     referer: 'https://iot.kohler.local/restroom/numi-bidet/status',
@@ -21,6 +15,18 @@ const PERSONA_UA_MAP = {
     name: 'TOTO 极智卫洗丽智能坐便器 (Neorest NX2)',
     role: 'Washlet OS · 电解除菌水冲洗循环'
   },
+  smart_fridge: {
+    ua: 'Mozilla/5.0 (Linux; Tizen 4.0.0.8; SmartFridge-Hub-RF28N9780SR) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/2.1 Chrome/56.0.2924.87 Safari/537.36',
+    referer: 'https://hub.samsung-family-fridge.local/app/kitchen-memo',
+    name: '三星 Family Hub 双开门智能冰箱',
+    role: 'Tizen 4.0 · 21.5寸冷藏室厨房大屏'
+  },
+  smart_toaster: {
+    ua: 'Mozilla/5.0 (Linux; Android 7.1; SmartToaster-InstaGLO-R180) AppleWebKit/537.36 (KHTML, like Gecko) ToasterBrowser/1.0 BagelMode/Level-4 Safari/537.36',
+    referer: 'https://revolutioncooking.local/toaster/browning-cycle',
+    name: 'Revolution InstaGLO 触屏智能烤面包机',
+    role: 'Android 7.1 · 正在烘烤酥脆全麦贝果'
+  },
   roomba_vacuum: {
     ua: 'iRobot-Roomba-j7+/Firmware-22.29.3 (Linux; MIPS; iRobot-OS; Vacuum-Telemetry-v3)',
     referer: 'https://cloud.irobot.local/robot/telemetry/stuck-under-sofa',
@@ -28,7 +34,13 @@ const PERSONA_UA_MAP = {
     role: 'iRobot OS · 卡在客厅餐桌底下'
   },
 
-  // 赛博古董与音乐
+  // ── 赛博古董与乐器 ─────────────────────────────────────────────
+  ktv_kiosk: {
+    ua: 'Mozilla/5.0 (Windows NT 6.1; WOW64; KTV-VOD-Player/Thunder-v9) AppleWebKit/537.36 (KHTML, like Gecko) KTVBrowser/3.0 Safari/537.36',
+    referer: 'http://ktv-local-vod.lan/box-888/karaoke-playlist',
+    name: 'KTV 巨型霓虹点歌机台 (切歌重唱中)',
+    role: 'Windows Embedded · 伴奏青藏高原高潮破音'
+  },
   kindle_paperwhite: {
     ua: 'Mozilla/5.0 (X11; U; Linux armv7l like Android; en-us) AppleWebKit/538.1 (KHTML, like Gecko) Version/5.0 Safari/538.1 Kindle/5.14.2 (screen 1072x1448; text-color-mode: grayscale)',
     referer: 'https://kindle.amazon.com/experimental-browser/bookshelf',
@@ -60,7 +72,7 @@ const PERSONA_UA_MAP = {
     role: 'Nintendo OS · 双屏裸眼 3D 手写笔'
   },
 
-  // 离奇海外与商业
+  // ── 离奇海外与商用 ─────────────────────────────────────────────
   mcdonalds_kiosk: {
     ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; McDonald-SelfOrder-Kiosk/K20-US) AppleWebKit/537.36 (KHTML, like Gecko) McOrderKiosk/8.4.1 Chrome/91.0.4472.164 Safari/537.36',
     referer: 'https://pos.mcdonalds.local/kiosk-ui/meal-combo-order',
@@ -73,26 +85,50 @@ const PERSONA_UA_MAP = {
     name: '特斯拉 Model 3 车机中控大屏 (超充站充能中)',
     role: 'Tesla OS V12 · AMD Ryzen 车机中控大屏'
   },
+  porsche_taycan: {
+    ua: 'Mozilla/5.0 (X11; Porsche-PCM/6.0; Taycan-Passenger-Screen) AppleWebKit/537.36 (KHTML, like Gecko) PorscheBrowser/3.0 Safari/537.36',
+    referer: 'https://porsche-connect.de/taycan/cockpit/track-mode',
+    name: '保时捷 Taycan Turbo S 副驾独立屏幕',
+    role: 'Porsche PCM · 纽北赛道 260km/h 极速'
+  },
+  boeing_ife: {
+    ua: 'Mozilla/5.0 (Linux; Tizen 2.4; InFlight-Entertainment-Panasonic-eX3) AppleWebKit/538.1 (KHTML, like Gecko) AeroBrowser/2.1 SatelliteNet/GEO-Ka',
+    referer: 'https://in-flight.wifi.aero/portal/flight-map',
+    name: '波音 777-300ER 经济舱后背娱乐屏 (巡航中)',
+    role: 'Panasonic eX3 · 万米巡航北极圈卫通'
+  },
+  vegas_slots: {
+    ua: 'Mozilla/5.0 (Windows NT 10.0; IGT-SlotMachine/Advantage-Bonusing) AppleWebKit/537.36 (KHTML, like Gecko) CasinoKiosk/4.2 Safari/537.36',
+    referer: 'https://casino-floor.bellagio.vegas/slot/jackpot-spin',
+    name: '拉斯维加斯 777 赌场巨型老虎机台',
+    role: 'IGT Advantage · 百乐宫赌场疯狂吐币'
+  },
   playstation_5: {
     ua: 'Mozilla/5.0 (PlayStation; PlayStation 5/8.60) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15',
     referer: 'https://playstation.net/ps5/system/guide',
     name: '索尼 PlayStation 5 次世代主机 (DualSense 手柄)',
     role: 'PlayStation OS · 4K 客厅电视与手柄晃动'
   },
-  gree_phone: {
-    ua: 'Mozilla/5.0 (Linux; Android 9; Gree Phone 3 Build/PKQ1.181121.001) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.136 Mobile Safari/537.36',
-    referer: 'https://gree.air-conditioner.local/iot-hub',
-    name: '格力手机 3 代 (董明珠定制版)',
-    role: 'Gree OS · 核心掌握空调节能协议'
-  },
-  imoo_watch: {
-    ua: 'Mozilla/5.0 (Linux; Android 8.1.0; imoo Watch Phone Z6 Build/O11019) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Mobile Safari/537.36',
-    referer: 'https://imoo.watch.system.local/reader',
-    name: '小天才儿童电话手表 Z6 旗舰版',
-    role: 'Android 8.1 · 腕上翻转微屏'
-  },
 
-  // 深空科考与机甲
+  // ── 深空科考与重器 ─────────────────────────────────────────────
+  jwst_telescope: {
+    ua: 'NASA-ESA-CSA-JWST/Ops-Cycle-3 (Lagrange-L2; NIRCam-CryoOS 5.1; DeepSpaceNetwork-70m)',
+    referer: 'https://webbtelescope.org/telemetry/nirspec-spectroscopy',
+    name: '詹姆斯·韦伯空间望远镜 (JWST · L2 节点)',
+    role: 'NASA/ESA · 日地L2点150万公里红外遥测'
+  },
+  cern_lhc: {
+    ua: 'CERN-LHC-ATLAS/Trigger-DAQ-v8 (ScientificLinux-7; RootAnalysis-6.28; 13.6TeV-Collision)',
+    referer: 'https://atlas.cern/telemetry/higgs-boson-candidate',
+    name: '欧洲核子中心 CERN 强子对撞机 ATLAS 节点',
+    role: 'CERN ATLAS · 瑞士地下100米13.6TeV对撞'
+  },
+  nuclear_submarine: {
+    ua: 'US-Navy-Submarine/SSN-774 (Submerged-Silent-Running; SonarCombat-RTOS 6.1; ELF-Burst-Link)',
+    referer: 'http://cic.uss-virginia.navy.mil/sonar-hydrophone',
+    name: '美国弗吉尼亚级核动力潜艇水下声呐终端',
+    role: 'US Navy SSN · 深海200米加密长波声呐'
+  },
   nasa_rover: {
     ua: 'NASA-Perseverance-Rover/Sol-1200 (Mars-Jezero; ChemCam-RTOS 4.2; DeepSpaceNetwork)',
     referer: 'https://mars.nasa.gov/perseverance/telemetry',
@@ -104,6 +140,32 @@ const PERSONA_UA_MAP = {
     referer: 'https://spot.bostondynamics.local/mission/oil-refinery-patrol',
     name: '波士顿动力 Spot 四足机械狗 (自主勘探巡逻)',
     role: 'RobotOS 3.3 · 工业巡检四足动态平衡'
+  },
+
+  // ── 离谱廉价穷鬼机 ─────────────────────────────────────────────
+  walmart_onn: {
+    ua: 'Mozilla/5.0 (Linux; Android 12; onn. 4K Streaming Box Build/STT2.220920.001) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.61 Mobile Safari/537.36',
+    referer: 'https://tv.walmart.com/streaming/home',
+    name: '沃尔玛 Onn. 超廉价电视棒 ($14.88 塑料棒)',
+    role: 'Android TV 12 · 14美元塑料超烫手电视棒'
+  },
+  esp8266_board: {
+    ua: 'ESP8266-HTTPClient/1.2 (FreeRTOS 8.2; Xtensa-LX106; RAM-32KB-Free; Sensor-Node)',
+    referer: 'http://192.168.4.1/sensor-dht11',
+    name: '乐鑫 ESP8266 极简 Wi-Fi 单片机 ($1.8 裸板)',
+    role: 'FreeRTOS · 面包板插着杜邦线飞线发热'
+  },
+  casio_calc: {
+    ua: 'Casio-ClassWiz/FX-991 (Math-OS 3.0; SolarPower-Cell; CalcBrowser/0.9; MathJax-Off)',
+    referer: 'calc://matrix-determinant/solve',
+    name: '卡西欧 Casio 科学函数计算器 (FX-991CNX)',
+    role: 'ClassWiz · 太阳能微型电池板矩阵点阵屏'
+  },
+  ikea_desk: {
+    ua: 'IKEA-Idasen-Desk/Linak-BLE-v1.4 (Embedded-RTOS; MotorHeight-105cm; HealthTracker)',
+    referer: 'ble://ikea-home-smart/desk/standing-timer',
+    name: '宜家 IDÅSEN 智能电动升降桌手控板',
+    role: 'Linak BLE · 电机嗡嗡升至105cm站立高度'
   }
 };
 

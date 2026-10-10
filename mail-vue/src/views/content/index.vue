@@ -71,7 +71,7 @@
                 <template #dropdown>
                   <el-dropdown-menu class="codex-dropdown-menu persona-dropdown">
                     <div class="dropdown-header-note">
-                      <span class="fleuron">✦</span> 替身人格矩阵 (Decoy Personas · 16 设备)
+                      <span class="fleuron">✦</span> 替身人格矩阵 (Decoy Personas · 27 奇异设备)
                     </div>
                     <el-scrollbar max-height="340px">
                       <el-dropdown-item
