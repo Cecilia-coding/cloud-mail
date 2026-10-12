@@ -56,6 +56,26 @@ describe('privacy probe', () => {
     });
   });
 
+  it.each([
+    ['imoo_watch', 'XTC-Z6', 'Android 7.1.1'],
+    ['gree_phone', 'G0335D', 'HALO OS 2.0']
+  ])('dispatches the restored %s persona instead of falling back', async (personaKey, uaFragment, identityFragment) => {
+    const fetchImpl = vi.fn().mockResolvedValue({ status: 200, statusText: 'OK' });
+
+    const response = await runPrivacyProbe(
+      { url: 'https://tracker.example/restored-persona', personaKey },
+      { fetchImpl }
+    );
+
+    expect(response.data).toMatchObject({ personaKey });
+    expect(response.data.personaName).toContain(personaKey === 'imoo_watch' ? '小天才' : '格力');
+    expect(fetchImpl.mock.calls[0][1].headers).toMatchObject({
+      'User-Agent': expect.stringContaining(uaFragment),
+      'Accept-Language': 'zh-CN,zh;q=0.9'
+    });
+    expect(JSON.stringify(response.data)).toContain(identityFragment);
+  });
+
   it('selects a concrete persona close to the adaptive tuning target', () => {
     expect(resolvePersonaKey('adaptive_mix', { plausibility: 91, absurdity: 32 }, () => 0))
       .toBe('clover_station_duo');

@@ -2,7 +2,7 @@
  * Decoy Personas & Telemetry Poisoning Engine (幽灵替身与遥测反向投毒)
  * 
  * Disguises email client identity as exotic and hilarious devices:
- * - 赛博古董与已死系统: Nokia N97, BlackBerry Bold, Palm Treo, Lumia 1020, Motorola Pager, Tamagotchi, iPod, Meizu, 3DS, Kindle
+ * - 赛博古董与已死系统: Nokia N97, BlackBerry Bold, Palm Treo, Lumia 1020, Imoo Z6, Gree Phone 3, Motorola Pager, Tamagotchi, iPod, Meizu, 3DS, Kindle
  * - 私密情趣与成人玩具: Lelo F1s, Satisfyer Pro 2+, We-Vibe Chorus
  * - 智能卫浴与离奇厨电: Kohler Numi Toilet, TOTO Washlet, Samsung Fridge, Smart Toaster, Roomba Vacuum
  * - 离奇海外与商用机台: McDonald's Kiosk, KTV VOD, Vegas Slots, Boeing 777 IFE, Tesla Car, Porsche Taycan, PS5
@@ -181,6 +181,42 @@ const RAW_DECOY_PERSONAS = [
   },
 
   // ── 赛博古董与已死系统 ─────────────────────────────────────────
+  {
+    key: 'imoo_watch',
+    category: 'retro_ancient',
+    name: '小天才电话手表 Z6 (翻转双摄 · 上课禁用)',
+    shortName: '小天才电话手表 Z6',
+    emoji: '⌚',
+    icon: 'solar:watch-round-linear',
+    badge: 'Android 7.1.1 · 4G 全网通',
+    specs: '1.41" AMOLED · 512MB RAM + 8GB · 前 500 万 + 后 800 万翻转双摄 · 20 米防水',
+    resolution: '320 × 360',
+    chip: '官方未公开 SoC · 512MB RAM / 8GB Flash',
+    userAgent: 'Mozilla/5.0 (Linux; Android 7.1.1; XTC-Z6 Build/NMF26X; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/69.0.3497.100 Mobile Safari/537.36',
+    referer: 'https://guardian.imoo.local/class-mode/inbox',
+    acceptLanguage: 'zh-CN,zh;q=0.9',
+    description: '硬件参数取自小天才官方资料；追踪后台则会认真记录：一块 320×360 的儿童手表在上课禁用模式里偷偷打开了营销邮件。',
+    plausibility: 78,
+    absurdity: 67
+  },
+  {
+    key: 'gree_phone',
+    category: 'retro_ancient',
+    name: '格力手机 3 代 (G0335D · 掌握核心科技)',
+    shortName: '格力手机 3 代',
+    emoji: '💨',
+    icon: 'solar:smartphone-linear',
+    badge: 'Android 7.1.2 · HALO OS 2.0',
+    specs: '5.99" 18:9 TFT · 4GB + 64GB · 3160mAh · 后置 1200 万 + 500 万双摄',
+    resolution: '1080 × 2160',
+    chip: 'Qualcomm Snapdragon 821 (MSM8996SG)',
+    userAgent: 'Mozilla/5.0 (Linux; Android 7.1.2; G0335D Build/N2G47H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.98 Mobile Safari/537.36',
+    referer: 'https://gree.air-conditioner.local/core-technology/mail',
+    acceptLanguage: 'zh-CN,zh;q=0.9',
+    description: '真实配置来自那台售价 3600 元、在 2019 年搭载骁龙 821 登场的格力手机；虚构部分是它正以“掌握核心科技”的姿态替你审阅邮件。',
+    plausibility: 83,
+    absurdity: 76
+  },
   {
     key: 'nokia_n97',
     category: 'retro_ancient',
@@ -1072,7 +1108,7 @@ const RAW_DECOY_PERSONAS = [
     emoji: '🎲',
     icon: 'solar:atom-linear',
     badge: 'Quantum Jitter · 动态坍缩',
-    specs: '全宇宙 34 种离奇奇异设备库随机坍缩 · 无法构建画像',
+    specs: '全库离奇设备随机坍缩 · 无法构建稳定画像',
     resolution: '全域随机维度',
     chip: '超对称随机数发生器',
     userAgent: '(每次诱饵发射时，在上述所有奇异设备中随机挑选一种)',
