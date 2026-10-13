@@ -89,6 +89,34 @@ export function isNetworkResourceUrl(value) {
 }
 
 /**
+ * Mail attachments are served by Cloud Mail itself. Loading one cannot reveal
+ * the reader's address to the sender, so it must not be reported as a remote
+ * tracking resource. Keep this allow-list deliberately narrow: arbitrary
+ * relative URLs still stay inert because they may target application routes.
+ */
+export function isInternalAttachmentUrl(value) {
+  const normalized = normalizeResourceValue(value).replace(/\\/g, '/');
+  if (!normalized || /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(normalized)) return false;
+
+  const rawPath = normalized.split(/[?#]/, 1)[0].replace(/^\.\//, '');
+  let path;
+  try {
+    path = decodeURIComponent(rawPath);
+  } catch (e) {
+    return false;
+  }
+  const withoutLeadingSlash = path.replace(/^\//, '');
+  if (!withoutLeadingSlash.startsWith('attachments/')) return false;
+
+  const segments = withoutLeadingSlash.split('/');
+  return segments.length > 1 && segments.every(segment => segment && segment !== '.' && segment !== '..');
+}
+
+export function shouldBlockResourceUrl(value) {
+  return isNetworkResourceUrl(value) && !isInternalAttachmentUrl(value);
+}
+
+/**
  * Extract network-capable references from CSS without attaching it to the page.
  * The decoded form catches escaped url tokens such as u\\72l(...).
  */
@@ -97,7 +125,7 @@ export function getUnsafeCssResourceUrls(cssText) {
   const resources = [];
   const add = value => {
     const normalized = normalizeResourceValue(value);
-    if (isNetworkResourceUrl(normalized) && !resources.includes(normalized)) {
+    if (shouldBlockResourceUrl(normalized) && !resources.includes(normalized)) {
       resources.push(normalized);
     }
   };
@@ -134,7 +162,7 @@ export function getUnsafeCssResourceUrls(cssText) {
     const urlMatches = Array.from(css.matchAll(new RegExp(urlPattern.source, 'gi')));
     const onlyEmbeddedUrls = urlMatches.length > 0 && urlMatches.every(item => {
       const value = item[2] ?? item[3];
-      return value && !isNetworkResourceUrl(value);
+      return value && !shouldBlockResourceUrl(value);
     });
     if (!onlyEmbeddedUrls || /@import\b|(?:-webkit-)?image-set\s*\(/i.test(css)) {
       resources.push('[CSS 外部资源]');
@@ -153,14 +181,32 @@ function isBeaconImage(img, src) {
   const heightAttr = img.getAttribute('height');
   const style = (img.getAttribute('style') || '').toLowerCase();
   const isZeroOrOneDim = widthAttr === '0' || widthAttr === '1' || heightAttr === '0' || heightAttr === '1';
-  const isHiddenByStyle = (
+  const isExplicitlyHiddenByStyle = (
     /(?:^|;)\s*display\s*:\s*none(?:\s*!important)?\s*(?:;|$)/.test(style) ||
     /(?:^|;)\s*visibility\s*:\s*hidden(?:\s*!important)?\s*(?:;|$)/.test(style) ||
-    /(?:^|;)\s*opacity\s*:\s*0(?:\.0+)?(?:\s*!important)?\s*(?:;|$)/.test(style) ||
+    /(?:^|;)\s*opacity\s*:\s*0(?:\.0+)?(?:\s*!important)?\s*(?:;|$)/.test(style)
+  );
+  const hasTinyInlineDimensions = (
     /(?:^|;)\s*(?:width|height)\s*:\s*(?:0|1)(?:px)?(?:\s*!important)?\s*(?:;|$)/.test(style)
   );
+  const isHiddenByStyle = isExplicitlyHiddenByStyle || hasTinyInlineDimensions;
   const matchesTrackerDomain = isKnownTracker(src);
-  return { isZeroOrOneDim, isHiddenByStyle, matchesTrackerDomain };
+  return { isZeroOrOneDim, isHiddenByStyle, isExplicitlyHiddenByStyle, matchesTrackerDomain };
+}
+
+export function getTrackerReason(flags) {
+  if (flags.matchesTrackerDomain) {
+    return '匹配已知追踪指纹 (Anthropic / SendGrid / Customer.io)';
+  }
+  if (flags.isExplicitlyHiddenByStyle) {
+    return '元素由内联 CSS 隐藏';
+  }
+  if (flags.isZeroOrOneDim) {
+    return '尺寸为 0x0 或 1x1 隐形探测点';
+  }
+  return flags.isHiddenByStyle
+    ? '元素尺寸由内联 CSS 压缩为隐形探测点'
+    : '命中追踪器启发式规则';
 }
 
 function createTrackerRecord(url, flags) {
@@ -170,9 +216,7 @@ function createTrackerRecord(url, flags) {
   return {
     url,
     type,
-    reason: flags.matchesTrackerDomain
-      ? '匹配已知追踪指纹 (Anthropic / SendGrid / Customer.io)'
-      : (flags.isHiddenByStyle ? '元素由内联 CSS 隐藏' : '尺寸为 0x0 或 1x1 隐形探测点'),
+    reason: getTrackerReason(flags),
     status: '已就地拔除 · 阻止泄露真实 IP 与开信时间'
   };
 }
@@ -259,7 +303,7 @@ export function inspectAndSanitizeHtml(rawHtml, options = {}) {
   // External stylesheets are never needed inside a mail body. Record them in
   // default-block mode before removing every dangerous element.
   doc.querySelectorAll('link[href]').forEach(link => {
-    if (!shouldAllowRemoteResources && isNetworkResourceUrl(link.getAttribute('href'))) {
+    if (!shouldAllowRemoteResources && shouldBlockResourceUrl(link.getAttribute('href'))) {
       recordBlocked(link.getAttribute('href'));
     }
   });
@@ -318,7 +362,7 @@ export function inspectAndSanitizeHtml(rawHtml, options = {}) {
     }
 
     if (!shouldAllowRemoteResources) {
-      if (src && isNetworkResourceUrl(src)) {
+      if (src && shouldBlockResourceUrl(src)) {
         recordBlocked(src);
         img.setAttribute('data-shield-src', src);
         img.setAttribute('data-shield-blocked', 'true');
@@ -350,7 +394,7 @@ export function inspectAndSanitizeHtml(rawHtml, options = {}) {
         const value = (el.getAttribute(attribute) || '').trim();
         // srcset is a candidate list. A leading data: candidate must not hide a
         // later remote candidate, so the whole list stays inert by default.
-        if (!value || (attribute !== 'srcset' && !isNetworkResourceUrl(value))) return;
+        if (!value || (attribute !== 'srcset' && !shouldBlockResourceUrl(value))) return;
         recordBlocked(value);
         el.setAttribute(`data-shield-${attribute.replace(':', '-')}`, value);
         el.removeAttribute(attribute);
