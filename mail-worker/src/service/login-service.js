@@ -19,6 +19,7 @@ import dayjs from 'dayjs';
 import { toUtc } from '../utils/date-uitil';
 import { t } from '../i18n/i18n.js';
 import verifyRecordService from './verify-record-service';
+import authSessionService from './auth-session-service';
 
 const loginService = {
 
@@ -231,8 +232,10 @@ const loginService = {
 		let authInfo = await c.env.kv.get(KvConst.AUTH_INFO + userRow.userId, { type: 'json' });
 
 		if (authInfo && (authInfo.user.email === userRow.email)) {
+			authInfo.tokens = Array.isArray(authInfo.tokens) ? authInfo.tokens : [];
+			await authSessionService.migrateLegacy(c, userRow.userId, authInfo.tokens);
 
-			if (authInfo.tokens.length > 10) {
+			if (authInfo.tokens.length >= 10) {
 				authInfo.tokens.shift();
 			}
 
@@ -252,16 +255,22 @@ const loginService = {
 
 		await userService.updateUserInfo(c, userRow.userId);
 
-		await c.env.kv.put(KvConst.AUTH_INFO + userRow.userId, JSON.stringify(authInfo), { expirationTtl: constant.TOKEN_EXPIRE });
+		await Promise.all([
+			authSessionService.create(c, userRow.userId, uuid),
+			c.env.kv.put(KvConst.AUTH_INFO + userRow.userId, JSON.stringify(authInfo), { expirationTtl: constant.TOKEN_EXPIRE })
+		]);
 		return jwt;
 	},
 
 	async logout(c, userId) {
-		const token =userContext.getToken(c);
+		const token = await userContext.getToken(c);
+		await authSessionService.remove(c, userId, token);
 		const authInfo = await c.env.kv.get(KvConst.AUTH_INFO + userId, { type: 'json' });
-		const index = authInfo.tokens.findIndex(item => item === token);
-		authInfo.tokens.splice(index, 1);
-		await c.env.kv.put(KvConst.AUTH_INFO + userId, JSON.stringify(authInfo));
+		if (!authInfo) return;
+		authInfo.tokens = Array.isArray(authInfo.tokens)
+			? authInfo.tokens.filter(item => item !== token)
+			: [];
+		await c.env.kv.put(KvConst.AUTH_INFO + userId, JSON.stringify(authInfo), { expirationTtl: constant.TOKEN_EXPIRE });
 	}
 
 };

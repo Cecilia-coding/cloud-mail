@@ -2,6 +2,7 @@ import BizError from '../error/biz-error';
 import constant from '../const/constant';
 import jwtUtils from '../utils/jwt-utils';
 import KvConst from '../const/kv-const';
+import authSessionService from '../service/auth-session-service';
 import dayjs from 'dayjs';
 import userService from '../service/user-service';
 import permService from '../service/perm-service';
@@ -127,8 +128,16 @@ app.use('*', async (c, next) => {
 		throw new BizError(t('authExpired'), 401);
 	}
 
-	if (!authInfo.tokens.includes(token)) {
+	const legacyTokens = Array.isArray(authInfo.tokens) ? authInfo.tokens : [];
+	const hasDedicatedSession = await authSessionService.exists(c, userId, token);
+	const hasLegacySession = legacyTokens.includes(token);
+
+	if (!hasDedicatedSession && !hasLegacySession) {
 		throw new BizError(t('authExpired'), 401);
+	}
+
+	if (!hasDedicatedSession && hasLegacySession) {
+		await authSessionService.create(c, userId, token);
 	}
 
 	const permIndex = requirePerms.findIndex(item => {
