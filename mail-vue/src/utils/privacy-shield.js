@@ -348,7 +348,9 @@ export function inspectAndSanitizeHtml(rawHtml, options = {}) {
       }
       elements.forEach(el => {
         const value = (el.getAttribute(attribute) || '').trim();
-        if (!value || !isNetworkResourceUrl(value)) return;
+        // srcset is a candidate list. A leading data: candidate must not hide a
+        // later remote candidate, so the whole list stays inert by default.
+        if (!value || (attribute !== 'srcset' && !isNetworkResourceUrl(value))) return;
         recordBlocked(value);
         el.setAttribute(`data-shield-${attribute.replace(':', '-')}`, value);
         el.removeAttribute(attribute);
