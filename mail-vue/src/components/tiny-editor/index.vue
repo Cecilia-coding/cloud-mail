@@ -91,8 +91,8 @@ function initEditor() {
     statusbar: false,
     height: "100%",
     auto_focus: true,
-    //relative_urls: false,  //阻止 img标签域名和网站域名相同 自动把链接转换相对路径
-    //remove_script_host: false, // 阻止删除 URL 中的域名
+    relative_urls: false, // 保留同源图片与链接的绝对地址，避免外部收件端解析成自身域名
+    remove_script_host: false,
     forced_root_block: 'div',
     skin: `${uiStore.dark ? 'oxide-dark' : 'oxide'}`,
     content_css: `/tinymce/css/index.css,${uiStore.dark ? 'dark' : 'default'}`,
