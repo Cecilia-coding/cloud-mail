@@ -51,9 +51,9 @@
                 <span v-if="privacyAudit.beaconsCount > 0" class="shield-highlight">
                   已拦截 {{ privacyAudit.beaconsCount }} 枚隐形追踪信标
                 </span>
-                <span v-if="privacyAudit.blockedImagesCount > 0">
+                <span v-if="privacyAudit.blockedResourcesCount > 0">
                   <span v-if="privacyAudit.beaconsCount > 0"> · </span>
-                  {{ privacyAudit.blockedImagesCount }} 张外链图片已沙箱隔离
+                  {{ privacyAudit.blockedResourcesCount }} 项外部资源已沙箱隔离
                 </span>
                 <span v-if="privacyAudit.isClean">
                   隐身保护生效中 · 未发现隐藏信标与追踪器
@@ -124,21 +124,21 @@
                 </template>
               </el-dropdown>
 
-              <button class="shield-btn log-btn" @click="showTrackerLog = true" v-if="privacyAudit.beaconsCount > 0 || privacyAudit.blockedImagesCount > 0">
+              <button class="shield-btn log-btn" @click="showTrackerLog = true" v-if="privacyAudit.beaconsCount > 0 || privacyAudit.blockedResourcesCount > 0">
                 <Icon icon="solar:document-text-linear" width="14" height="14" />
                 防御报告
               </button>
-              <button class="shield-btn" @click="toggleLoadImages" v-if="privacyAudit.blockedImagesCount > 0 && !allowImagesForCurrent">
+              <button class="shield-btn" @click="toggleLoadImages" v-if="privacyAudit.blockedResourcesCount > 0 && !allowImagesForCurrent">
                 <Icon icon="solar:gallery-wide-linear" width="14" height="14" />
-                显示图片
+                显示外部内容
               </button>
-              <button class="shield-btn" @click="trustSender" v-if="privacyAudit.blockedImagesCount > 0 && !allowImagesForCurrent && email.sendEmail && !isSenderTrusted(email.sendEmail)">
+              <button class="shield-btn" @click="trustSender" v-if="privacyAudit.blockedResourcesCount > 0 && !allowImagesForCurrent && email.sendEmail && !isSenderTrusted(email.sendEmail)">
                 <Icon icon="solar:user-check-rounded-linear" width="14" height="14" />
                 信任发件人
               </button>
-              <span class="shield-loaded-tip" v-else-if="allowImagesForCurrent && privacyAudit.blockedImagesCount > 0">
+              <span class="shield-loaded-tip" v-else-if="allowImagesForCurrent && privacyAudit.blockedResourcesCount > 0">
                 <Icon icon="solar:check-circle-linear" width="14" height="14" />
-                已放行外链图片
+                已放行外部内容
               </span>
             </div>
           </div>
@@ -199,8 +199,8 @@
             <span class="card-label">已拔除追踪信标</span>
           </div>
           <div class="summary-card warning">
-            <span class="card-num">{{ privacyAudit.blockedImagesCount }}</span>
-            <span class="card-label">已沙箱隔离图片</span>
+            <span class="card-num">{{ privacyAudit.blockedResourcesCount }}</span>
+            <span class="card-label">已隔离外部资源</span>
           </div>
           <div class="summary-card clean">
             <span class="card-num">100%</span>
@@ -267,13 +267,13 @@
           </div>
         </div>
 
-        <div class="audit-section" v-if="privacyAudit.blockedImages?.length > 0">
+        <div class="audit-section" v-if="privacyAudit.blockedResources?.length > 0">
           <div class="section-title">
-            <span class="fleuron">❖</span> 已沙箱隔离的外部图片（防止加载探测）：
+            <span class="fleuron">❖</span> 已沙箱隔离的外部资源（防止加载探测）：
           </div>
-          <div class="tracker-item is-image" v-for="(imgUrl, idx) in privacyAudit.blockedImages" :key="idx">
+          <div class="tracker-item is-image" v-for="(resourceUrl, idx) in privacyAudit.blockedResources" :key="idx">
             <div class="tracker-url">
-              <code>{{ imgUrl }}</code>
+              <code>{{ resourceUrl }}</code>
             </div>
             <div class="tracker-reason">
               状态：已替换为本地占位，阻止外部主机获取开信时间与客户端指纹
