@@ -38,7 +38,8 @@ export async function init() {
         document.title = setting.title;
 
         if (user) {
-            accountStore.currentAccountId = user.account.accountId;
+            const lastAccountId = localStorage.getItem('cloud_mail_last_account_id');
+            accountStore.currentAccountId = lastAccountId ? Number(lastAccountId) : user.account.accountId;
             accountStore.currentAccount = user.account;
             userStore.user = user;
 

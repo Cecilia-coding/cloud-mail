@@ -488,14 +488,19 @@ async function saveToken(token) {
   localStorage.setItem('token', token)
   refreshWebsiteConfig()
   const user = await loginUserInfo();
-  accountStore.currentAccountId = user.account.accountId;
+  const lastAccountId = localStorage.getItem('cloud_mail_last_account_id');
+  accountStore.currentAccountId = lastAccountId ? Number(lastAccountId) : user.account.accountId;
   accountStore.currentAccount = user.account;
   userStore.user = user;
   const routers = permsToRouter(user.permKeys);
   routers.forEach(routerData => {
     router.addRoute('layout', routerData);
   });
-  await router.replace({name: 'layout'})
+  if (window.innerWidth <= 767) {
+    await router.replace({path: '/accounts'})
+  } else {
+    await router.replace({name: 'layout'})
+  }
   uiStore.showNotice()
   oauthLoading.value = false;
   bindLoading.value = false;

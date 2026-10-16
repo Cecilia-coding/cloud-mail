@@ -1,4 +1,5 @@
 const en = {
+    accounts: 'Accounts Hub',
     inbox: 'Inbox',
     drafts: 'Drafts',
     sent: 'Sent',

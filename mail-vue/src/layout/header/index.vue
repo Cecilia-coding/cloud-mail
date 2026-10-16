@@ -2,6 +2,15 @@
   <div class="header" :class="!hasPerm('email:send') ? 'not-send' : ''">
     <div class="header-btn">
       <hanburger @click="changeAside"></hanburger>
+      <button
+        v-if="isMobile && route.path !== '/accounts'"
+        class="mobile-back-hub-btn"
+        @click="goToAccounts"
+        aria-label="返回密匣印籍"
+      >
+        <Icon icon="solar:alt-arrow-left-linear" width="14" height="14" />
+        <span class="hub-pill-text">印籍</span>
+      </button>
       <div class="breadcrumb-group">
         <span class="breadcrumb-fleuron">✦</span>
         <span class="breadcrumb-item">{{ $t(route.meta.title) }}</span>
@@ -103,7 +112,7 @@ import {Icon} from "@iconify/vue";
 import {useUiStore} from "@/store/ui.js";
 import {useUserStore} from "@/store/user.js";
 import {useRoute} from "vue-router";
-import {computed, ref} from "vue";
+import {computed, ref, onMounted, onBeforeUnmount} from "vue";
 import {useSettingStore} from "@/store/setting.js";
 import {hasPerm} from "@/perm/perm.js"
 import {useI18n} from "vue-i18n";
@@ -117,6 +126,23 @@ const uiStore = useUiStore();
 const logoutLoading = ref(false)
 const userInfoShow = ref(false)
 const userinfoRef = ref({})
+
+const isMobile = ref(window.innerWidth <= 767)
+function handleHeaderResize() {
+  isMobile.value = window.innerWidth <= 767
+}
+
+onMounted(() => {
+  window.addEventListener('resize', handleHeaderResize)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleHeaderResize)
+})
+
+function goToAccounts() {
+  router.push('/accounts')
+}
 
 const accountCount = computed(() => {
   return userStore.user.role.accountCount
@@ -449,6 +475,34 @@ function formatName(email) {
   align-items: center;
   height: 100%;
   min-width: 0;
+
+  .mobile-back-hub-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    height: 28px;
+    padding: 0 8px;
+    margin-right: 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(179, 136, 72, 0.45);
+    background: rgba(179, 136, 72, 0.12);
+    color: #b38848;
+    font-family: var(--font-mincho), "Songti SC", serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+    &:hover {
+      background: rgba(179, 136, 72, 0.22);
+      border-color: #b38848;
+    }
+
+    .hub-pill-text {
+      letter-spacing: 0.05em;
+    }
+  }
 
   .breadcrumb-group {
     display: inline-flex;

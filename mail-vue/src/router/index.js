@@ -8,9 +8,24 @@ const routes = [
     {
         path: '/',
         name: 'layout',
-        redirect: '/inbox',
+        redirect: () => {
+            if (window.innerWidth <= 767) {
+                return '/accounts'
+            }
+            return '/inbox'
+        },
         component: () => import('@/layout/index.vue'),
         children: [
+            {
+                path: '/accounts',
+                name: 'accounts',
+                component: () => import('@/views/accounts/index.vue'),
+                meta: {
+                    title: 'accounts',
+                    name: 'accounts',
+                    menu: false
+                }
+            },
             {
                 path: '/inbox',
                 name: 'email',
@@ -111,6 +126,10 @@ router.beforeEach((to, from, next) => {
 
     if (token && to.path.startsWith('/login')) {
         return next(from.path)
+    }
+
+    if (token && window.innerWidth <= 767 && (to.path === '/' || (first && to.path === '/inbox'))) {
+        return next('/accounts')
     }
 
     next()

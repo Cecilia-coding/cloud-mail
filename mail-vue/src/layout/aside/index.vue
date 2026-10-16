@@ -7,6 +7,11 @@
         <div class="brand-sub">The Codex Archive</div>
       </div>
       <el-menu :collapse="false" text-color="var(--aside-text-color, var(--el-text-color-primary))" active-text-color="var(--el-color-primary)" style="margin-top: 10px">
+        <el-menu-item @click="router.push({name: 'accounts'})" index="accounts"
+                      :class="route.meta.name === 'accounts' ? 'choose-item' : ''">
+          <Icon icon="solar:folder-with-files-linear" width="20" height="20" />
+          <span class="menu-name" style="margin-left: 16px">{{$t('accounts')}}</span>
+        </el-menu-item>
         <el-menu-item @click="router.push({name: 'email'})" index="email"
                       :class="route.meta.name === 'email' ? 'choose-item' : ''">
           <Icon icon="hugeicons:mailbox-01" width="20" height="20" />

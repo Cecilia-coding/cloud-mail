@@ -1,4 +1,5 @@
 const zh = {
+    accounts: '密匣印籍',
     inbox: '收件箱',
     drafts: '草稿箱',
     sent: '已发送',

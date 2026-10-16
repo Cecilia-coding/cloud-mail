@@ -420,6 +420,9 @@ function refresh() {
 function changeAccount(account) {
   accountStore.currentAccountId = account.accountId
   accountStore.currentAccount = account
+  if (account && account.accountId) {
+    localStorage.setItem('cloud_mail_last_account_id', String(account.accountId))
+  }
 }
 
 function add() {
@@ -488,8 +491,11 @@ function getAccountList() {
     if (list.length < queryParams.size) {
       noLoading.value = true
     }
-    if (accounts.length === 0) {
-      accountStore.currentAccount = list[0]
+    if (accounts.length === 0 && list.length > 0) {
+      const savedId = localStorage.getItem('cloud_mail_last_account_id');
+      const target = list.find(item => String(item.accountId) === String(savedId)) || list[0];
+      accountStore.currentAccountId = target.accountId;
+      accountStore.currentAccount = target;
     }
 
     accounts.push(...list)
