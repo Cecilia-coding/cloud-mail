@@ -51,7 +51,20 @@
     justify-content: center;
     align-items: center;
     z-index: 500;
-    background: var(--el-bg-color);
+    background: #f7f4fa;
+    transition: opacity 300ms ease;
+  }
+
+  .dark #loading-first {
+    background: #141414;
+  }
+
+  [data-theme="obsidian"] #loading-first {
+    background: #121316;
+  }
+
+  [data-theme="celadon"] #loading-first {
+    background: #f3f6f4;
   }
 
   .loading-hide {
@@ -59,27 +72,92 @@
     opacity: 0;
   }
 
-  .loading-icon {
+  .loading-box {
     display: inline-flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2px;
+    gap: 16px;
+    user-select: none;
   }
 
-  .loading-image {
-    width: 70px;
-    height: 70px;
-    object-fit: contain;
+  .astrolabe-wrap {
+    width: 78px;
+    height: 78px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .astrolabe-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    overflow: visible;
+  }
+
+  .astrolabe-ring-outer {
+    transform-origin: 50px 50px;
+    animation: astrolabe-spin-cw 18s linear infinite;
+  }
+
+  .astrolabe-ring-middle {
+    transform-origin: 50px 50px;
+    animation: astrolabe-spin-ccw 11s linear infinite;
+  }
+
+  .astrolabe-core {
+    transform-origin: 50px 50px;
+    animation: astrolabe-breath 3s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+  }
+
+  .dark .core-inner-dot,
+  [data-theme="obsidian"] .core-inner-dot {
+    fill: #141414;
+  }
+
+  @keyframes astrolabe-spin-cw {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes astrolabe-spin-ccw {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(-360deg);
+    }
+  }
+
+  @keyframes astrolabe-breath {
+    0%, 100% {
+      transform: scale(0.95);
+      opacity: 0.78;
+    }
+    50% {
+      transform: scale(1.05);
+      opacity: 1;
+    }
   }
 
   .loading-progress {
     position: relative;
-    width: 64px;
-    height: 4px;
+    width: 88px;
+    height: 2px;
     overflow: hidden;
     border-radius: 999px;
-    background: rgba(64, 158, 255, 0.18);
+    background: rgba(179, 136, 72, 0.18);
+  }
+
+  .dark .loading-progress,
+  [data-theme="obsidian"] .loading-progress {
+    background: rgba(179, 136, 72, 0.14);
   }
 
   .loading-progress::before {
@@ -90,35 +168,68 @@
     width: 100%;
     height: 100%;
     border-radius: inherit;
-    background: #409EFF;
+    background: linear-gradient(90deg, #8a486b 0%, #b38848 50%, #c49e5d 100%);
     transform: scaleX(0);
     transform-origin: left center;
-    animation: loading-progress-grow 2.4s linear forwards;
+    animation: loading-progress-grow 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   .loading-progress::after {
     content: "";
     position: absolute;
     top: 0;
-    width: 24px;
+    width: 28px;
     height: 100%;
     border-radius: inherit;
-    background: rgba(64, 158, 255, 0.45);
-    filter: blur(4px);
-    transform: translateX(-24px);
-    animation: loading-progress-peg 2.4s linear forwards;
+    background: rgba(196, 158, 93, 0.6);
+    filter: blur(2px);
+    transform: translateX(-28px);
+    animation: loading-progress-peg 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .loading-caption {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #8a486b;
+    letter-spacing: 0.08em;
+  }
+
+  .dark .loading-caption,
+  [data-theme="obsidian"] .loading-caption {
+    color: #b38848;
+    opacity: 0.85;
+  }
+
+  .caption-fleuron {
+    color: #b38848;
+    font-size: 9px;
+    opacity: 0.8;
+  }
+
+  .caption-main {
+    font-family: var(--font-mincho), "Songti SC", "Noto Serif SC", serif;
+    font-weight: 600;
+  }
+
+  .caption-sub {
+    font-family: var(--font-serif-italic), "Cormorant Garamond", Georgia, serif;
+    font-size: 10.5px;
+    font-style: italic;
+    opacity: 0.75;
   }
 
   .loading-complete .loading-progress::before {
     animation: none;
     transform: scaleX(1);
-    transition: transform 200ms linear;
+    transition: transform 180ms linear;
   }
 
   .loading-complete .loading-progress::after {
     animation: none;
-    transform: translateX(60px);
-    transition: transform 200ms linear;
+    transform: translateX(88px);
+    transition: transform 180ms linear;
   }
 
   @keyframes loading-progress-grow {
@@ -132,18 +243,66 @@
 
   @keyframes loading-progress-peg {
     0% {
-      transform: translateX(-24px);
+      transform: translateX(-28px);
     }
     100% {
-      transform: translateX(60px);
+      transform: translateX(88px);
     }
   }
 </style>
 <body>
-<div id="loading-first" >
-  <div class="loading-icon">
-    <img class="loading-image" src="/mail-pwa.png" alt="Cloud Mail">
+<div id="loading-first">
+  <div class="loading-box">
+    <div class="astrolabe-wrap">
+      <svg class="astrolabe-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="astrolabe-gold" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#b38848"/>
+            <stop offset="100%" stop-color="#8a486b"/>
+          </linearGradient>
+          <linearGradient id="astrolabe-rose" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#8a486b"/>
+            <stop offset="100%" stop-color="#b38848"/>
+          </linearGradient>
+        </defs>
+
+        <g class="astrolabe-ring-outer">
+          <circle cx="50" cy="50" r="45" stroke="url(#astrolabe-gold)" stroke-width="0.8" opacity="0.6"/>
+          <circle cx="50" cy="50" r="41.5" stroke="url(#astrolabe-gold)" stroke-width="1.2" stroke-dasharray="1.5 5.5" opacity="0.75"/>
+          <circle cx="50" cy="50" r="38" stroke="url(#astrolabe-rose)" stroke-width="0.6" opacity="0.45"/>
+          <polygon points="50,4 51.5,8.5 50,13 48.5,8.5" fill="#b38848"/>
+          <polygon points="50,87 51.5,91.5 50,96 48.5,91.5" fill="#b38848"/>
+          <polygon points="4,50 8.5,51.5 13,50 8.5,48.5" fill="#b38848"/>
+          <polygon points="87,50 91.5,51.5 96,50 91.5,48.5" fill="#b38848"/>
+          <circle cx="21" cy="21" r="1" fill="#8a486b" opacity="0.7"/>
+          <circle cx="79" cy="21" r="1" fill="#8a486b" opacity="0.7"/>
+          <circle cx="21" cy="79" r="1" fill="#8a486b" opacity="0.7"/>
+          <circle cx="79" cy="79" r="1" fill="#8a486b" opacity="0.7"/>
+        </g>
+
+        <g class="astrolabe-ring-middle">
+          <ellipse cx="50" cy="50" rx="30" ry="14" stroke="url(#astrolabe-rose)" stroke-width="0.75" opacity="0.6" transform="rotate(30 50 50)"/>
+          <ellipse cx="50" cy="50" rx="30" ry="14" stroke="url(#astrolabe-rose)" stroke-width="0.75" opacity="0.6" transform="rotate(-30 50 50)"/>
+          <circle cx="50" cy="50" r="22" stroke="url(#astrolabe-gold)" stroke-width="0.75" stroke-dasharray="3 3" opacity="0.5"/>
+          <circle cx="24" cy="35" r="1.4" fill="#b38848"/>
+          <circle cx="76" cy="65" r="1.4" fill="#b38848"/>
+        </g>
+
+        <g class="astrolabe-core">
+          <path d="M50 20 L53 47 L80 50 L53 53 L50 80 L47 53 L20 50 L47 47 Z" fill="url(#astrolabe-gold)" opacity="0.92"/>
+          <path d="M50 31 L52 48 L69 50 L52 52 L50 69 L48 52 L31 50 L48 48 Z" fill="url(#astrolabe-rose)" opacity="0.75" transform="rotate(45 50 50)"/>
+          <circle cx="50" cy="50" r="4.5" fill="#f7f4fa" stroke="url(#astrolabe-gold)" stroke-width="1.2" class="core-inner-dot"/>
+          <circle cx="50" cy="50" r="1.6" fill="#b38848"/>
+        </g>
+      </svg>
+    </div>
     <div class="loading-progress" aria-hidden="true"></div>
+    <div class="loading-caption">
+      <span class="caption-fleuron">✦</span>
+      <span class="caption-main">密匣启封中</span>
+      <span class="caption-sub">Opening Codex Archive</span>
+      <span class="caption-fleuron">✦</span>
+    </div>
   </div>
 </div>
 <div id="app"></div>
