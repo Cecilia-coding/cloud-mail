@@ -24,3 +24,12 @@ test('keeps the restored Imoo Z6 and Gree Phone 3 personas', () => {
   assert.equal(gree.chip, 'Qualcomm Snapdragon 821 (MSM8996SG)');
   assert.match(gree.specs, /3160mAh/);
 });
+
+test('registers the Mitsubishi Heavy Industries excavator persona in scifi_defense', () => {
+  const excavator = DECOY_PERSONAS.find(persona => persona.key === 'mitsubishi_excavator');
+  assert.ok(excavator, 'mitsubishi_excavator should be registered in the decoy catalog');
+  assert.equal(excavator.category, 'scifi_defense');
+  assert.equal(excavator.resolution, '640 × 480 (油污电阻单色工控屏)');
+  assert.match(excavator.specs, /柴油机/);
+  assert.match(excavator.userAgent, /Heavy-Machinery/);
+});

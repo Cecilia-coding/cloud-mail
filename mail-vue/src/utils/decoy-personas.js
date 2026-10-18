@@ -6,7 +6,7 @@
  * - 私密情趣与成人玩具: Lelo F1s, Satisfyer Pro 2+, We-Vibe Chorus
  * - 智能卫浴与离奇厨电: Kohler Numi Toilet, TOTO Washlet, Samsung Fridge, Smart Toaster, Roomba Vacuum
  * - 离奇海外与商用机台: McDonald's Kiosk, KTV VOD, Vegas Slots, Boeing 777 IFE, Tesla Car, Porsche Taycan, PS5
- * - 深空科考与重工重器: JWST Telescope, CERN LHC, Virginia Nuclear Submarine, NASA Rover, Spot Robot Dog
+ * - 深空科考与重工重器: JWST Telescope, CERN LHC, Virginia Nuclear Submarine, NASA Rover, Spot Robot Dog, Mitsubishi Heavy Excavator
  * - 极简廉价穷鬼硬件: Walmart $15 Stick, ESP8266 Board, Casio Calc, IKEA Desk, Quantum Random
  */
 
@@ -481,7 +481,7 @@ const RAW_DECOY_PERSONAS = [
     chip: '次世代轻量化活塞驱动 · 双频 Wi-Fi 5 + BLE 5.0',
     userAgent: 'FeelConnect/4.2.0 (Kiiroo-Keon-2; Stroke-95mm; Velocity-684mms; Weight-996g; DualBand-WiFi)',
     referer: 'https://kiiroo.com/feelconnect/device-sync',
-    description: '次世代轻量化活塞机。冲程暴增至95毫米，极限线速度高达684毫米/秒！追踪后台直接被超音速般的物理位移震惊。'
+    description: '次世代轻量化活塞机。冲程暴增至95毫米，极限线速度高达684毫米/秒。追踪后台直接被超音速般的物理位移震惊。'
   },
   {
     key: 'kiiroo_sleeve',
@@ -645,7 +645,7 @@ const RAW_DECOY_PERSONAS = [
     chip: '联发科 MT8167 嵌入式低功耗芯片',
     userAgent: 'Mozilla/5.0 (Linux; Android 7.1; SmartToaster-InstaGLO-R180) AppleWebKit/537.36 (KHTML, like Gecko) ToasterBrowser/1.0 BagelMode/Level-4 Safari/537.36',
     referer: 'https://revolutioncooking.local/toaster/browning-cycle',
-    description: '硅谷历史上最经典的极客梗成真：发件人后台确信他们的邮件正在一台发热丝通红的面包机上被打开！'
+    description: '硅谷历史上最经典的极客梗成真：发件人后台确信他们的邮件正在一台发热丝通红的面包机上被打开。'
   },
   {
     key: 'roomba_vacuum',
@@ -677,7 +677,7 @@ const RAW_DECOY_PERSONAS = [
     chip: 'Intel Core i3 工业级宽温工控机',
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; McDonald-SelfOrder-Kiosk/K20-US) AppleWebKit/537.36 (KHTML, like Gecko) McOrderKiosk/8.4.1 Chrome/91.0.4472.164 Safari/537.36',
     referer: 'https://pos.mcdonalds.local/kiosk-ui/meal-combo-order',
-    description: '告诉发件方：有人正在麦当劳餐厅排队选超值套餐时，在大屏点餐机上弹出了你的邮件！'
+    description: '告诉发件方：有人正在麦当劳餐厅排队选超值套餐时，在大屏点餐机上弹出了你的邮件。'
   },
   {
     key: 'ktv_kiosk',
@@ -799,7 +799,7 @@ const RAW_DECOY_PERSONAS = [
     chip: '100,000 核超导磁体网格计算集群',
     userAgent: 'CERN-LHC-ATLAS/Trigger-DAQ-v8 (ScientificLinux-7; RootAnalysis-6.28; 13.6TeV-Collision)',
     referer: 'https://atlas.cern/telemetry/higgs-boson-candidate',
-    description: '发件方系统会抓狂地发现：信标触发地点位于瑞士日内瓦地下 100 米超导强子对撞机核心腔室！'
+    description: '发件方系统会抓狂地发现：信标触发地点位于瑞士日内瓦地下 100 米超导强子对撞机核心腔室。'
   },
   {
     key: 'nuclear_submarine',
@@ -845,6 +845,21 @@ const RAW_DECOY_PERSONAS = [
     userAgent: 'Boston-Dynamics-Spot/Robot-OS-3.3.0 (Linux; Tegra-Xavier; Autonomous-Inspection-Dog)',
     referer: 'https://spot.bostondynamics.local/mission/oil-refinery-patrol',
     description: '对方的大数据后台会收到一只机械狗在化工厂巡逻时顺便接收邮件的离谱遥测信号。'
+  },
+  {
+    key: 'mitsubishi_excavator',
+    category: 'scifi_defense',
+    name: '日本三菱重工 MS180 履带式液压挖掘机 (柴油机工控终端)',
+    shortName: '三菱重工液压挖掘机',
+    emoji: '🚜',
+    icon: 'solar:wheel-linear',
+    badge: '三菱重工 · 柴油液压工控',
+    specs: '直列六缸涡轮增压柴油机 · 铲斗容量 1.2m³ · 正在矿山露天作业',
+    resolution: '640 × 480 (油污电阻单色工控屏)',
+    chip: '日立 HD64180 / 工业级嵌入式 PLC 主板 (耐震防泥浆)',
+    userAgent: 'Mozilla/4.0 (compatible; MSIE 4.01; Windows CE; Heavy-Machinery; Mitsubishi-Excavator-MS180/Hydraulic-ECU-v2.1; 9600bps-Modem)',
+    referer: 'http://ecu.mitsubishi-heavy.local/diagnostics/hydraulic-pressure',
+    description: '发件方大数据中心将收到极其确凿的遥测回执：一位矿区作业人员正在轰鸣的柴油发动机与满是泥浆的驾驶室内，通过油污斑斑的 640x480 工控绿屏，极为严肃地阅读这封来信。'
   },
 
   // ── 极简廉价穷鬼硬件 ─────────────────────────────────────────
@@ -1167,7 +1182,7 @@ export function getActivePersonaKey() {
       return val;
     }
   } catch (e) {}
-  return 'smart_fridge'; // Default to Samsung Smart Fridge!
+  return 'smart_fridge'; // Default to Samsung Smart Fridge
 }
 
 /**
