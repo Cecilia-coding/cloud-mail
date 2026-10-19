@@ -60,6 +60,7 @@ It brings antique papyrus codex, obsidian stealth, and celadon emerald tactile a
   - **Mainstream Workhorses**: iPhone 16 Pro Max, MacBook Pro M4, Pixel 9 Pro XL, iPad Pro M4, ThinkPad X1 Carbon.
 - **Per-Mailbox Binding Matrix**: Assign distinct decoy personas to individual mailboxes.
 - **Adaptive Decoy Theater**: Simulates organic human reading duration before dispatching edge responses, disrupting tracking algorithms.
+- **Optional Egress Mounts**: Independently switch between interception-only, the native Cloudflare edge, and a Webshare relay pool. Mail reading and the privacy shield continue normally when the external relay is absent; proxy credentials remain inside the relay's encrypted environment.
 
 ### 4. Serverless Mail Engine (Core Capabilities)
 - **Economical Serverless Stack**: Built on Cloudflare Workers, D1 database, KV store, and R2 object storage.
@@ -110,6 +111,9 @@ Configure the following in GitHub `Settings -> Secrets and variables -> Actions`
 
 ### 2. Run Deployment
 Push changes to `main` or trigger the `Deploy cloud-mail to Cloudflare Workers` workflow manually from the Actions tab.
+
+### 3. Optional External Egress Pool
+The proxy pool never touches the mail server and requires no personal VPS. Deploy [`egress-relay`](./egress-relay/README.md), then configure the Worker secrets `EGRESS_RELAY_URL` and `EGRESS_RELAY_SECRET`; the Webshare option will become available automatically.
 
 ---
 

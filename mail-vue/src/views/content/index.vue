@@ -479,15 +479,24 @@ async function poisonSingleTracker(url) {
       });
       return;
     }
+    if (probeResult?.isSilent) {
+      poisonedFeedbackMap[url] = probeResult.message || '回馈出口已关闭：已拦截追踪资源，未产生任何外发流量';
+      ElMessage.info({
+        message: `✦ ${poisonedFeedbackMap[url]}`,
+        plain: true
+      });
+      return;
+    }
     poisonedSuccessMap[url] = true;
     const personaTitle = probeResult?.personaName || activePersona.value.name;
     const statusCode = probeResult?.statusCode ?? 200;
     const isNative = activePersonaKey.value === 'native_real';
+    const egressLabel = probeResult?.egressLabel || 'Cloudflare Edge';
     poisonedFeedbackMap[url] = isNative
       ? `原生探针已送达！目标后台记录设备：真实本机指纹 (HTTP ${statusCode})`
-      : `假遥测已送达！目标后台记录设备：${personaTitle} (HTTP ${statusCode})`;
+      : `假遥测已送达！${egressLabel} 已投递 ${personaTitle} (HTTP ${statusCode})`;
     ElMessage.success({
-      message: isNative ? '✦ 探针已从边缘送达！目标记录为你本机的真实 User-Agent' : `✦ 诱饵已从 Cloudflare 边缘送达！目标记录为「${personaTitle}」`,
+      message: isNative ? `✦ 探针已由 ${egressLabel} 送达！目标记录为你本机的真实 User-Agent` : `✦ 诱饵已由 ${egressLabel} 送达！目标记录为「${personaTitle}」`,
       plain: true
     });
   } catch (err) {

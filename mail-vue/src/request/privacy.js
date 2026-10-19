@@ -1,4 +1,5 @@
 import http from '@/axios/index.js';
+import { getActiveEgressMode } from '@/utils/egress-mode.js';
 
 /**
  * Dispatches a decoy probe from Cloudflare Worker edge proxy to poison target tracker URL
@@ -11,11 +12,16 @@ export function fireDecoyProbe(url, personaKey, options = {}) {
     url,
     personaKey,
     nativeUa,
+    egressMode: options.egressMode || getActiveEgressMode(),
     tuning: options.tuning,
     delaySeconds: options.delaySeconds,
     delayMinSeconds: options.delayMinSeconds,
     delayMaxSeconds: options.delayMaxSeconds
   }, { noMsg: true });
+}
+
+export function getEgressStatus() {
+  return http.get('/privacy/egress', { noMsg: true });
 }
 
 export function getDecoyArchive(limit = 40) {

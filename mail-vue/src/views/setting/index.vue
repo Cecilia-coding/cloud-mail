@@ -53,6 +53,31 @@
         </span>
       </div>
 
+      <div class="egress-dock">
+        <div class="egress-copy">
+          <span class="fleuron">❖</span>
+          <div>
+            <div class="egress-title">回馈出口挂载</div>
+            <div class="egress-subtitle">拦截、设备人格与网络出口彼此独立；拔掉外接出口不会影响邮箱阅读。</div>
+          </div>
+        </div>
+        <div class="egress-options">
+          <button
+            v-for="mode in egressOptions"
+            :key="mode.key"
+            class="egress-option"
+            :class="{ active: activeEgressMode === mode.key, unavailable: !mode.available }"
+            :disabled="!mode.available"
+            @click="selectEgressMode(mode.key)"
+          >
+            <span class="egress-option-name">{{ mode.name }}</span>
+            <span class="egress-option-detail">{{ mode.detail }}</span>
+            <span v-if="activeEgressMode === mode.key" class="egress-option-state">已接通</span>
+            <span v-else-if="!mode.available" class="egress-option-state">未挂载</span>
+          </button>
+        </div>
+      </div>
+
       <div class="decoy-tuning-panel">
         <div class="tuning-copy">
           <span class="fleuron">❖</span>
@@ -264,7 +289,7 @@
           >
             <span v-if="fireLoading" class="loading-spin">✦</span>
             <Icon v-else icon="solar:plain-linear" width="15" height="15" />
-            <span>{{ fireLoading ? '边缘节点拦截处理中...' : (activePersona.key === 'silent_block' ? '以 [绝对静默模式] 拦截出站请求' : (activePersona.key === 'native_real' ? '以 [本机真实原生] 身份发射探针' : `以 [${activePersona.shortName}] 身份发射诱饵`)) }}</span>
+            <span>{{ fireLoading ? '出口调度处理中...' : (activeEgressMode === 'off' ? '仅拦截 · 不产生回访流量' : (activePersona.key === 'silent_block' ? '以 [绝对静默模式] 拦截出站请求' : (activePersona.key === 'native_real' ? '以 [本机真实原生] 身份发射探针' : `以 [${activePersona.shortName}] 身份发射诱饵`))) }}</span>
           </button>
         </div>
 
@@ -281,7 +306,7 @@
         <div v-if="lastProbeResult" class="probe-result-terminal">
           <div class="terminal-header">
             <span class="terminal-dot green"></span>
-            <span class="terminal-title">✦ 诱饵发送响应回报 · Cloudflare Edge Response</span>
+            <span class="terminal-title">✦ 诱饵发送响应回报 · {{ lastProbeResult.egressLabel || 'Cloudflare Edge' }}</span>
             <span class="terminal-status">HTTP {{ lastProbeResult.statusCode }} {{ lastProbeResult.statusText }}</span>
           </div>
           <div class="terminal-body">
@@ -303,9 +328,9 @@
             </div>
             <div class="terminal-row note">
               <span class="term-lbl">安全说明:</span>
-              <span class="term-val" :class="lastProbeResult.personaKey === 'silent_block' ? 'purple' : (lastProbeResult.personaKey === 'native_real' ? 'blue' : 'green')">
-                {{ lastProbeResult.personaKey === 'silent_block'
-                  ? '绝对静默防御模式：边缘节点已就地拦截外发动作，未向目标发出任何探测流量，物理级 0 IP 泄露与 0 痕迹！'
+              <span class="term-val" :class="lastProbeResult.isSilent ? 'purple' : (lastProbeResult.personaKey === 'native_real' ? 'blue' : 'green')">
+                {{ lastProbeResult.isSilent
+                  ? (lastProbeResult.message || '出口已关闭：未向目标发出任何探测流量。')
                   : (lastProbeResult.personaKey === 'native_real'
                     ? '真实原生透传模式：未启用任何虚拟替身，目标端点已捕获你当前真实使用的浏览器 User-Agent！'
                     : '真实客户端 IP 0 泄露，发件人后台已记录所选奇异设备开信指纹！') }}
@@ -330,6 +355,7 @@
             <span class="archive-host">{{ entry.targetHost }}</span>
             <code>#{{ entry.fingerprint }}</code>
             <span class="archive-persona">{{ entry.personaName || personaNameFor(entry.requestedPersonaKey) }}</span>
+            <span class="archive-egress">{{ entry.egressLabel || egressNameFor(entry.egressMode) }}</span>
             <span class="archive-time">{{ formatArchiveTime(entry.firedAt || entry.scheduledFor) }}</span>
             <button v-if="entry.status === 'scheduled'" class="archive-cancel-btn" @click="cancelScheduledProbe(entry)">取消</button>
           </div>
@@ -391,7 +417,12 @@ import {
   getDecoyTuning,
   setDecoyTuning
 } from "@/utils/decoy-personas.js";
-import {fireDecoyProbe, getDecoyArchive, cancelDecoyProbe} from "@/request/privacy.js";
+import {fireDecoyProbe, getDecoyArchive, cancelDecoyProbe, getEgressStatus} from "@/request/privacy.js";
+import {
+  EGRESS_MODES,
+  getActiveEgressMode,
+  setActiveEgressMode
+} from "@/utils/egress-mode.js";
 
 const { t } = useI18n()
 const accountStore = useAccountStore()
@@ -401,6 +432,44 @@ const setPwdLoading = ref(false)
 const setNameShow = ref(false)
 const accountName = ref(null)
 const langSelect = ref(settingStore.lang)
+
+const activeEgressMode = ref(getActiveEgressMode())
+const remoteEgressModes = ref([])
+const egressOptions = computed(() => EGRESS_MODES.map(mode => {
+  const remote = remoteEgressModes.value.find(item => item.key === mode.key)
+  return {
+    ...mode,
+    available: remote?.available ?? mode.key !== 'webshare',
+    detail: remote?.detail || mode.subtitle
+  }
+}))
+
+async function loadEgressStatus() {
+  try {
+    const response = await getEgressStatus()
+    remoteEgressModes.value = response?.modes || response?.data?.modes || []
+    const active = egressOptions.value.find(mode => mode.key === activeEgressMode.value)
+    if (active && !active.available) {
+      activeEgressMode.value = 'cloudflare'
+      setActiveEgressMode('cloudflare')
+    }
+  } catch (error) {
+    remoteEgressModes.value = []
+  }
+}
+
+function selectEgressMode(mode) {
+  const option = egressOptions.value.find(item => item.key === mode)
+  if (!option?.available) return
+  activeEgressMode.value = mode
+  setActiveEgressMode(mode)
+  ElMessage.success({
+    message: mode === 'off'
+      ? '✦ 回馈出口已拔除：继续拦截，停止制造任何外发流量。'
+      : `✦ 回馈出口已切换为「${option.name}」。`,
+    plain: true
+  })
+}
 
 // 🎭 Decoy Personas Matrix State
 const selectedPersonaKey = ref(getActivePersonaKey())
@@ -526,6 +595,7 @@ function handleRemoveCustomRule(email) {
 onMounted(() => {
   loadUserAccounts();
   loadProbeArchive();
+  loadEgressStatus();
 });
 
 async function loadProbeArchive() {
@@ -552,6 +622,10 @@ async function cancelScheduledProbe(entry) {
 
 function personaNameFor(key) {
   return DECOY_PERSONAS.find(persona => persona.key === key)?.shortName || key
+}
+
+function egressNameFor(key) {
+  return EGRESS_MODES.find(mode => mode.key === key)?.name || key || 'Cloudflare 边缘'
 }
 
 function archiveStatusLabel(status) {
@@ -613,17 +687,20 @@ async function dispatchTestProbe() {
 
   fireLoading.value = true
   try {
-    const probeResult = await fireDecoyProbe(testTargetUrl.value.trim(), selectedPersonaKey.value, { tuning: decoyTuning })
+    const probeResult = await fireDecoyProbe(testTargetUrl.value.trim(), selectedPersonaKey.value, {
+      tuning: decoyTuning,
+      egressMode: activeEgressMode.value
+    })
     if (probeResult) {
       lastProbeResult.value = probeResult
       if (probeResult.isSilent) {
         ElMessage.info({
-          message: '✦ 绝对静默拦截生效：外发请求已被阻断，目标服务器 0 请求留痕！',
+          message: `✦ ${probeResult.message || '绝对静默拦截生效：外发请求已被阻断。'}`,
           plain: true
         })
       } else {
         ElMessage.success({
-          message: `✦ 探针已发射！目标服务器已捕获「${probeResult.personaName}」身份`,
+          message: `✦ 探针已由 ${probeResult.egressLabel || 'Cloudflare Edge'} 发射！目标服务器已捕获「${probeResult.personaName}」身份`,
           plain: true
         })
       }
@@ -1632,6 +1709,7 @@ function submitPwd() {
     }
   }
 
+  .egress-dock,
   .decoy-tuning-panel,
   .decoy-archive-box {
     margin: 14px 0;
@@ -1639,6 +1717,117 @@ function submitPwd() {
     border: 1px solid rgba(138, 72, 107, 0.22);
     border-radius: 9px;
     background: linear-gradient(135deg, rgba(138, 72, 107, 0.055), rgba(179, 136, 72, 0.045));
+  }
+
+  .egress-dock {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    .egress-copy {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      min-width: 230px;
+    }
+
+    .fleuron {
+      color: #b38848;
+    }
+
+    .egress-title {
+      font-family: var(--font-mincho), serif;
+      font-weight: 700;
+      color: var(--el-text-color-primary);
+    }
+
+    .egress-subtitle {
+      margin-top: 3px;
+      max-width: 420px;
+      color: var(--regular-text-color);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .egress-options {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(128px, 1fr));
+      gap: 8px;
+      flex: 1;
+      max-width: 610px;
+    }
+
+    .egress-option {
+      position: relative;
+      min-height: 62px;
+      padding: 9px 11px;
+      border: 1px solid rgba(138, 72, 107, 0.22);
+      border-radius: 7px;
+      color: #53475e;
+      background: rgba(255, 255, 255, 0.52);
+      text-align: left;
+      cursor: pointer;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+
+      &:hover:not(:disabled) {
+        transform: translateY(-1px);
+        border-color: rgba(138, 72, 107, 0.55);
+      }
+
+      &.active {
+        border-color: #8a486b;
+        box-shadow: inset 0 0 0 1px rgba(138, 72, 107, 0.18), 0 4px 12px rgba(138, 72, 107, 0.1);
+        background: linear-gradient(135deg, rgba(138, 72, 107, 0.1), rgba(179, 136, 72, 0.07));
+      }
+
+      &.unavailable {
+        opacity: 0.52;
+        cursor: not-allowed;
+      }
+    }
+
+    .egress-option-name,
+    .egress-option-detail {
+      display: block;
+    }
+
+    .egress-option-name {
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .egress-option-detail {
+      margin-top: 4px;
+      padding-right: 38px;
+      color: var(--regular-text-color);
+      font-size: 10px;
+      line-height: 1.35;
+    }
+
+    .egress-option-state {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      color: #8a486b;
+      font-size: 9px;
+      letter-spacing: 0.05em;
+    }
+
+    @media (max-width: 980px) {
+      flex-direction: column;
+      align-items: stretch;
+
+      .egress-options {
+        max-width: none;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .egress-options {
+        grid-template-columns: 1fr;
+      }
+    }
   }
 
   .decoy-tuning-panel {
@@ -1751,7 +1940,7 @@ function submitPwd() {
 
     .archive-row {
       display: grid;
-      grid-template-columns: 58px minmax(110px, 1fr) 100px minmax(150px, 1.4fr) 95px auto;
+      grid-template-columns: 58px minmax(110px, 1fr) 100px minmax(150px, 1.4fr) minmax(110px, 0.9fr) 95px auto;
       align-items: center;
       gap: 8px;
       padding: 7px 8px;
@@ -1776,7 +1965,8 @@ function submitPwd() {
     }
 
     .archive-host,
-    .archive-persona {
+    .archive-persona,
+    .archive-egress {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -1794,7 +1984,8 @@ function submitPwd() {
         grid-template-columns: 58px 1fr 90px;
 
         code,
-        .archive-persona {
+        .archive-persona,
+        .archive-egress {
           display: none;
         }
       }
