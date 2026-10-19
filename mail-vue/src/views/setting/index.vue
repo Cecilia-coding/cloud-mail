@@ -57,23 +57,21 @@
         <div class="egress-copy">
           <span class="fleuron">❖</span>
           <div>
-            <div class="egress-title">回馈出口挂载</div>
-            <div class="egress-subtitle">拦截、设备人格与网络出口彼此独立；拔掉外接出口不会影响邮箱阅读。</div>
+            <div class="egress-title">回馈出口</div>
+            <div class="egress-subtitle">独立切换「仅拦截」与 Cloudflare 边缘回馈；邮箱阅读与追踪拦截始终保持。</div>
           </div>
         </div>
         <div class="egress-options">
           <button
-            v-for="mode in egressOptions"
+            v-for="mode in EGRESS_MODES"
             :key="mode.key"
             class="egress-option"
-            :class="{ active: activeEgressMode === mode.key, unavailable: !mode.available }"
-            :disabled="!mode.available"
+            :class="{ active: activeEgressMode === mode.key }"
             @click="selectEgressMode(mode.key)"
           >
             <span class="egress-option-name">{{ mode.name }}</span>
-            <span class="egress-option-detail">{{ mode.detail }}</span>
-            <span v-if="activeEgressMode === mode.key" class="egress-option-state">已接通</span>
-            <span v-else-if="!mode.available" class="egress-option-state">未挂载</span>
+            <span class="egress-option-detail">{{ mode.subtitle }}</span>
+            <span v-if="activeEgressMode === mode.key" class="egress-option-state">已选中</span>
           </button>
         </div>
       </div>
@@ -417,7 +415,7 @@ import {
   getDecoyTuning,
   setDecoyTuning
 } from "@/utils/decoy-personas.js";
-import {fireDecoyProbe, getDecoyArchive, cancelDecoyProbe, getEgressStatus} from "@/request/privacy.js";
+import {fireDecoyProbe, getDecoyArchive, cancelDecoyProbe} from "@/request/privacy.js";
 import {
   EGRESS_MODES,
   getActiveEgressMode,
@@ -434,33 +432,10 @@ const accountName = ref(null)
 const langSelect = ref(settingStore.lang)
 
 const activeEgressMode = ref(getActiveEgressMode())
-const remoteEgressModes = ref([])
-const egressOptions = computed(() => EGRESS_MODES.map(mode => {
-  const remote = remoteEgressModes.value.find(item => item.key === mode.key)
-  return {
-    ...mode,
-    available: remote?.available ?? mode.key !== 'webshare',
-    detail: remote?.detail || mode.subtitle
-  }
-}))
-
-async function loadEgressStatus() {
-  try {
-    const response = await getEgressStatus()
-    remoteEgressModes.value = response?.modes || response?.data?.modes || []
-    const active = egressOptions.value.find(mode => mode.key === activeEgressMode.value)
-    if (active && !active.available) {
-      activeEgressMode.value = 'cloudflare'
-      setActiveEgressMode('cloudflare')
-    }
-  } catch (error) {
-    remoteEgressModes.value = []
-  }
-}
 
 function selectEgressMode(mode) {
-  const option = egressOptions.value.find(item => item.key === mode)
-  if (!option?.available) return
+  const option = EGRESS_MODES.find(item => item.key === mode)
+  if (!option) return
   activeEgressMode.value = mode
   setActiveEgressMode(mode)
   ElMessage.success({
@@ -595,7 +570,6 @@ function handleRemoveCustomRule(email) {
 onMounted(() => {
   loadUserAccounts();
   loadProbeArchive();
-  loadEgressStatus();
 });
 
 async function loadProbeArchive() {
@@ -1752,10 +1726,10 @@ function submitPwd() {
 
     .egress-options {
       display: grid;
-      grid-template-columns: repeat(3, minmax(128px, 1fr));
+      grid-template-columns: repeat(2, minmax(128px, 1fr));
       gap: 8px;
       flex: 1;
-      max-width: 610px;
+      max-width: 420px;
     }
 
     .egress-option {
@@ -1781,10 +1755,6 @@ function submitPwd() {
         background: linear-gradient(135deg, rgba(138, 72, 107, 0.1), rgba(179, 136, 72, 0.07));
       }
 
-      &.unavailable {
-        opacity: 0.52;
-        cursor: not-allowed;
-      }
     }
 
     .egress-option-name,

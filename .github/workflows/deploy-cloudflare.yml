@@ -28,8 +28,6 @@ jobs:
       AI_MODEL: ${{ secrets.AI_MODEL || vars.AI_MODEL || '@cf/meta/llama-3.1-8b-instruct-fast' }}
       CLOUDFLARE_EMAIL: ${{ secrets.CF_EMAIL || vars.CF_EMAIL || false }}
       ANALYSIS_CACHE: ${{ secrets.ANALYSIS_CACHE || vars.ANALYSIS_CACHE || false }}
-      EGRESS_RELAY_URL: ${{ secrets.EGRESS_RELAY_URL }}
-      EGRESS_RELAY_SECRET: ${{ secrets.EGRESS_RELAY_SECRET }}
 
 
     outputs:
@@ -207,14 +205,6 @@ jobs:
           
           sed -i "s|\${D1_DATABASE_ID}|$D1_ID|g" "$CONFIG_FILE"
           echo "✅ Setup completed."
-
-      - name: 🛰️ 挂载可选出口桥 / Configure optional egress relay
-        if: ${{ env.EGRESS_RELAY_URL != '' && env.EGRESS_RELAY_SECRET != '' }}
-        working-directory: ./mail-worker
-        run: |
-          printf '%s' "$EGRESS_RELAY_URL" | pnpm wrangler secret put EGRESS_RELAY_URL -c wrangler-action.toml
-          printf '%s' "$EGRESS_RELAY_SECRET" | pnpm wrangler secret put EGRESS_RELAY_SECRET -c wrangler-action.toml
-          echo "✅ Optional egress relay mounted."
 
       - name: 🚀 开始部署 / Start deployment
         id: deploy

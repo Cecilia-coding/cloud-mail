@@ -35,45 +35,6 @@ describe('privacy probe', () => {
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
-  it('dispatches a signed task through the optional Webshare relay', async () => {
-    const fetchImpl = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        ok: true,
-        statusCode: 204,
-        statusText: 'No Content',
-        node: 'Webshare · Frankfurt #1',
-        egress: { label: 'Frankfurt #1', country: 'DE', city: 'Frankfurt' }
-      })
-    });
-    const response = await runPrivacyProbe(
-      { url: 'https://tracker.example/open', personaKey: 'smart_fridge', egressMode: 'webshare' },
-      {
-        fetchImpl,
-        env: {
-          EGRESS_RELAY_URL: 'https://relay.example/api/probe',
-          EGRESS_RELAY_SECRET: 'shared-secret'
-        }
-      }
-    );
-
-    expect(response.data).toMatchObject({
-      statusCode: 204,
-      egressMode: 'webshare',
-      egressLabel: 'Frankfurt #1',
-      egressCountry: 'DE',
-      egressCity: 'Frankfurt'
-    });
-    expect(fetchImpl).toHaveBeenCalledOnce();
-    expect(fetchImpl.mock.calls[0][0]).toBe('https://relay.example/api/probe');
-    expect(fetchImpl.mock.calls[0][1].headers).toMatchObject({
-      'Content-Type': 'application/json',
-      'X-Cloud-Mail-Timestamp': expect.any(String),
-      'X-Cloud-Mail-Signature': expect.stringMatching(/^[a-f0-9]{64}$/)
-    });
-  });
-
   it('sends the selected persona headers and returns the real target status', async () => {
     const fetchImpl = vi.fn().mockResolvedValue({ status: 204, statusText: 'No Content' });
 

@@ -20,10 +20,6 @@ export function fireDecoyProbe(url, personaKey, options = {}) {
   }, { noMsg: true });
 }
 
-export function getEgressStatus() {
-  return http.get('/privacy/egress', { noMsg: true });
-}
-
 export function getDecoyArchive(limit = 40) {
   return http.get('/privacy/archive', { params: { limit }, noMsg: true });
 }

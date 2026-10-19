@@ -19,10 +19,12 @@ test('defaults to the native Cloudflare exit', () => withStorage(() => {
   assert.equal(getActiveEgressMode(), 'cloudflare');
 }));
 
-test('persists supported optional egress mounts only', () => withStorage(() => {
-  assert.equal(setActiveEgressMode('webshare'), true);
-  assert.equal(getActiveEgressMode(), 'webshare');
+test('persists supported egress modes only', () => withStorage(() => {
+  assert.equal(setActiveEgressMode('off'), true);
+  assert.equal(getActiveEgressMode(), 'off');
+  assert.equal(setActiveEgressMode('webshare'), false);
+  assert.equal(getActiveEgressMode(), 'off');
   assert.equal(setActiveEgressMode('mystery-tunnel'), false);
-  assert.equal(getActiveEgressMode(), 'webshare');
+  assert.equal(getActiveEgressMode(), 'off');
 }));
 

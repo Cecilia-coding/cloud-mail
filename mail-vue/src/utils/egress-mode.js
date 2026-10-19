@@ -10,11 +10,6 @@ export const EGRESS_MODES = Object.freeze([
     key: 'cloudflare',
     name: 'Cloudflare 边缘',
     subtitle: '使用当前 Worker 数据中心出口'
-  },
-  {
-    key: 'webshare',
-    name: '外接出口池',
-    subtitle: '经由可拔插 Webshare 中继出站'
   }
 ]);
 

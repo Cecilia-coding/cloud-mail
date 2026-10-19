@@ -60,7 +60,7 @@
   - **现代常规与日常真机**：iPhone 16 Pro Max、MacBook Pro M4、Pixel 9 Pro XL、iPad Pro M4、ThinkPad X1 Carbon 等。
 - **邮箱级专属画像绑定**：支持名下每一个小号独立选派诱饵替身，量体裁衣。
 - **自适应延迟剧场 (Adaptive Decoy Theater)**：动态模拟人类阅读时间阻尼，在延迟随机区间后再行触发边缘反馈，彻底粉碎追踪大数据的算法画像模型。
-- **可拔插回馈出口 (Optional Egress Mounts)**：在「仅拦截 / Cloudflare 边缘 / Webshare 外接出口池」之间独立切换。外接中继未部署时邮箱与原生反追踪照常工作；代理凭据只存在于中继服务的加密环境变量中。
+- **独立回馈开关 (Independent Feedback Switch)**：在「仅拦截」与「Cloudflare 边缘回馈」之间切换。关闭回馈时仍持续拦截追踪资源，同时停止一切主动外发流量。
 
 ### 4. 基础全功能邮箱底座 (Core Mailbox Engine)
 - **低成本 Serverless**：纯依托 Cloudflare 免费/低成本生态（Workers、D1、KV、R2）。
@@ -111,9 +111,6 @@
 
 ### 2. 触发部署
 配置完成后，将代码推送到 `main` 分支，或在 Actions 页面手动运行 `Deploy cloud-mail to Cloudflare Workers` 即可全自动构建部署完毕。
-
-### 3. 可选：挂载外接出口池
-外接代理不经过邮件服务器，也不需要自有 VPS。部署 [`egress-relay`](./egress-relay/README.md) 后，在 GitHub Actions Secrets 中增加 `EGRESS_RELAY_URL` 与 `EGRESS_RELAY_SECRET`；下次部署会自动把两枚 secret 挂入 Worker，设置页随后点亮 Webshare 出口选项。
 
 ---
 
