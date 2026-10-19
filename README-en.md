@@ -113,7 +113,7 @@ Configure the following in GitHub `Settings -> Secrets and variables -> Actions`
 Push changes to `main` or trigger the `Deploy cloud-mail to Cloudflare Workers` workflow manually from the Actions tab.
 
 ### 3. Optional External Egress Pool
-The proxy pool never touches the mail server and requires no personal VPS. Deploy [`egress-relay`](./egress-relay/README.md), then configure the Worker secrets `EGRESS_RELAY_URL` and `EGRESS_RELAY_SECRET`; the Webshare option will become available automatically.
+The proxy pool never touches the mail server and requires no personal VPS. Deploy [`egress-relay`](./egress-relay/README.md), then add `EGRESS_RELAY_URL` and `EGRESS_RELAY_SECRET` to GitHub Actions Secrets. The next deployment mounts them into the Worker and enables the Webshare option automatically.
 
 ---
 

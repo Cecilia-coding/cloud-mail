@@ -113,7 +113,7 @@
 配置完成后，将代码推送到 `main` 分支，或在 Actions 页面手动运行 `Deploy cloud-mail to Cloudflare Workers` 即可全自动构建部署完毕。
 
 ### 3. 可选：挂载外接出口池
-外接代理不经过邮件服务器，也不需要自有 VPS。部署 [`egress-relay`](./egress-relay/README.md) 后，为 Worker 配置 `EGRESS_RELAY_URL` 与 `EGRESS_RELAY_SECRET` 两个加密变量，设置页便会自动点亮 Webshare 出口选项。
+外接代理不经过邮件服务器，也不需要自有 VPS。部署 [`egress-relay`](./egress-relay/README.md) 后，在 GitHub Actions Secrets 中增加 `EGRESS_RELAY_URL` 与 `EGRESS_RELAY_SECRET`；下次部署会自动把两枚 secret 挂入 Worker，设置页随后点亮 Webshare 出口选项。
 
 ---
 
