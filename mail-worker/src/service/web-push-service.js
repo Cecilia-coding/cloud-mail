@@ -119,14 +119,23 @@ async function dispatchNotification(c, sub, payload, keyName) {
 			sub.keys.auth
 		);
 
+		const pushHeaders = {
+			'Content-Encoding': 'aes128gcm',
+			'Content-Type': 'application/octet-stream',
+			'TTL': '86400',
+			'Urgency': 'high',
+			'Authorization': 'vapid t=' + vapidToken + ', k=' + vapidKeys.publicKey
+		};
+		if (payload && payload.tag) {
+			const cleanTopic = String(payload.tag).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 32);
+			if (cleanTopic.length > 0) {
+				pushHeaders['Topic'] = cleanTopic;
+			}
+		}
+
 		const response = await fetch(sub.endpoint, {
 			method: 'POST',
-			headers: {
-				'Content-Encoding': 'aes128gcm',
-				'Content-Type': 'application/octet-stream',
-				'TTL': '86400',
-				'Authorization': 'vapid t=' + vapidToken + ', k=' + vapidKeys.publicKey
-			},
+			headers: pushHeaders,
 			body: encryptedBody
 		});
 

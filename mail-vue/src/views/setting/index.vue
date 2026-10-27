@@ -557,6 +557,14 @@ async function handleSendTestPush() {
 
 onMounted(() => {
   refreshPushState()
+  setTimeout(() => {
+    refreshPushState()
+  }, 600)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      refreshPushState()
+    }
+  })
 })
 
 const activeEgressMode = ref(getActiveEgressMode())

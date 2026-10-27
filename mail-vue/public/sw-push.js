@@ -25,7 +25,23 @@ self.addEventListener('push', event => {
 		renotify: true
 	};
 
-	event.waitUntil(self.registration.showNotification(title, options));
+	const showTask = self.registration.showNotification(title, options).catch(() => {
+		return self.registration.showNotification(title, {
+			body: options.body,
+			data: options.data
+		});
+	});
+
+	const broadcastTask = clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+		for (const client of clientList) {
+			client.postMessage({
+				type: 'PUSH_NOTIFICATION_ARRIVED',
+				payload
+			});
+		}
+	}).catch(() => {});
+
+	event.waitUntil(Promise.all([showTask, broadcastTask]));
 });
 
 self.addEventListener('notificationclick', event => {

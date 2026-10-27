@@ -51,7 +51,7 @@ export async function getPushStatus() {
 	const supported = checkPushSupported();
 	const ios = isIOS();
 	const standalone = isStandalone();
-	const permission = typeof Notification === 'undefined' ? 'unsupported' : Notification.permission;
+	let permission = typeof Notification === 'undefined' ? 'unsupported' : Notification.permission;
 	let subscribed = false;
 	let endpoint = '';
 
@@ -62,6 +62,9 @@ export async function getPushStatus() {
 			if (Boolean(sub)) {
 				subscribed = true;
 				endpoint = sub.endpoint;
+				if (Boolean(permission === 'denied') === false) {
+					permission = 'granted';
+				}
 			}
 		} catch (err) {}
 	}
@@ -96,8 +99,18 @@ export async function subscribe(accountEmail = '') {
 		};
 	}
 
-	let currentPermission = Notification.permission;
-	if (currentPermission === 'default') {
+	let currentPermission = typeof Notification === 'undefined' ? 'default' : Notification.permission;
+	let existingSub = null;
+	if ('serviceWorker' in navigator) {
+		try {
+			const reg = await navigator.serviceWorker.ready;
+			existingSub = await reg.pushManager.getSubscription();
+		} catch (e) {}
+	}
+
+	if (Boolean(existingSub)) {
+		currentPermission = 'granted';
+	} else if (currentPermission === 'default') {
 		currentPermission = await Notification.requestPermission();
 	}
 
