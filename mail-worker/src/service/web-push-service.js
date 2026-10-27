@@ -33,13 +33,20 @@ export async function getVapidKeys(c) {
 		};
 	}
 
-	const stored = await c.env.kv.get(KV_VAPID_KEY, { type: 'json' });
-	if (Boolean(stored) && Boolean(stored.publicKey) && Boolean(stored.privateKeyJwk)) {
-		return stored;
+	let inMemoryKeys = null;
+
+	if (Boolean(c?.env?.kv)) {
+		const stored = await c.env.kv.get(KV_VAPID_KEY, { type: 'json' });
+		if (Boolean(stored) && Boolean(stored.publicKey) && Boolean(stored.privateKeyJwk)) {
+			return stored;
+		}
+
+		const generated = await webPushCrypto.generateVapidKeyPair();
+		await c.env.kv.put(KV_VAPID_KEY, JSON.stringify(generated));
+		return generated;
 	}
 
 	const generated = await webPushCrypto.generateVapidKeyPair();
-	await c.env.kv.put(KV_VAPID_KEY, JSON.stringify(generated));
 	return generated;
 }
 

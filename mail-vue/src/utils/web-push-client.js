@@ -109,13 +109,30 @@ export async function subscribe(accountEmail = '') {
 		};
 	}
 
-	const keyRes = await getVapidPublicKey();
-	const vapidPublicKey = keyRes?.data?.publicKey;
+	let keyRes;
+	try {
+		keyRes = await getVapidPublicKey();
+	} catch (err) {
+		const detail = err?.message || err?.data?.message || err?.statusText || '请确认后端服务已更新并重新部署';
+		return {
+			success: false,
+			reason: 'fetch_key_failed',
+			message: '获取推送公钥失败: ' + detail
+		};
+	}
+
+	const vapidPublicKey =
+		(typeof keyRes === 'string' ? keyRes : null) ||
+		keyRes?.publicKey ||
+		keyRes?.data?.publicKey ||
+		keyRes?.data?.data?.publicKey ||
+		'';
+
 	if (Boolean(vapidPublicKey) === false) {
 		return {
 			success: false,
 			reason: 'key_missing',
-			message: '获取推送服务端公钥失败'
+			message: '获取推送服务端公钥失败: 凭据响应格式不符'
 		};
 	}
 

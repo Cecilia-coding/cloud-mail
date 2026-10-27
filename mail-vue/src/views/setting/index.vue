@@ -546,12 +546,8 @@ async function togglePushSubscription() {
 async function handleSendTestPush() {
   pushLoading.value = true
   try {
-    const res = await webPushClient.sendTest()
-    if (res?.code === 200) {
-      ElMessage.success({ message: '测试通知已调度，请留意系统横幅', plain: true })
-    } else {
-      ElMessage.warning({ message: res?.message || '测试通知调度失败', plain: true })
-    }
+    await webPushClient.sendTest()
+    ElMessage.success({ message: '测试通知已调度，请留意系统横幅', plain: true })
   } catch (err) {
     ElMessage.error({ message: '测试推送异常: ' + (err?.message || '网络错误'), plain: true })
   } finally {
