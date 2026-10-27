@@ -19,7 +19,8 @@ const exclude = [
 	'/public/genToken',
 	'/telegram',
 	'/test',
-	'/oauth'
+	'/oauth',
+	'/push/vapid-public-key'
 ];
 
 const requirePerms = [

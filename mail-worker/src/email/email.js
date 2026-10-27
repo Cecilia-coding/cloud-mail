@@ -12,6 +12,7 @@ import userService from '../service/user-service';
 import telegramService from '../service/telegram-service';
 import aiService from '../service/ai-service';
 import webhookService from '../service/webhook-service';
+import webPushService from '../service/web-push-service';
 
 export async function email(message, env, ctx) {
 
@@ -194,6 +195,13 @@ export async function email(message, env, ctx) {
 		//转发到 Webhook
 		if (webhookStatus === settingConst.webhookStatus.OPEN && webhookUrl) {
 			await webhookService.sendEmail({ env }, emailRow, webhookUrl, webhookRetry, webhookSecret);
+		}
+
+		// Web Push 手机端通知推送
+		try {
+			await webPushService.sendEmailNotification({ env, ctx }, emailRow, account);
+		} catch (e) {
+			console.error('Web Push 推送异常: ', e);
 		}
 
 	} catch (e) {

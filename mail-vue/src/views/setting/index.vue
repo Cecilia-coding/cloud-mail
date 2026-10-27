@@ -362,6 +362,79 @@
       </div>
     </div>
 
+    <div class="codex-push-card">
+      <div class="push-header">
+        <div class="push-titles">
+          <div class="push-main-title">
+            <span class="fleuron">✦</span> 密匣传信 · 移动端 Web Push 推送节点
+          </div>
+          <div class="push-sub-title">APNS & WEB PUSH MOBILE DISPATCHER</div>
+        </div>
+        <div class="push-active-badge" :class="{ active: pushState.subscribed }">
+          <span class="pulse-dot"></span>
+          <span>推送状态: <strong>{{ pushState.subscribed ? '已挂接监听' : '未挂接' }}</strong></span>
+        </div>
+      </div>
+
+      <div class="push-desc-box">
+        <span class="fleuron-bullet">❖</span>
+        <span>
+          基于 RFC 8291 (aes128gcm 负载自加密) 与 RFC 8292 (VAPID 边缘验签)，在邮件存入密匣的瞬间直通 Apple 推送通知服务 (APNs) 或各端推送网关，实现 iPhone 手机锁屏唤醒与即时通知。
+        </span>
+      </div>
+
+      <div v-if="pushState.ios && pushState.standalone === false" class="push-ios-guide">
+        <div class="guide-icon">
+          <Icon icon="solar:smartphone-2-linear" width="22" height="22" />
+        </div>
+        <div class="guide-content">
+          <div class="guide-title">检测到 iOS Safari 运行环境</div>
+          <div class="guide-desc">
+            因 Apple 生态限制，iOS 必须在独立应用模式下才允许接收推送：请点击 Safari 底部「分享」图标 ➔ 选择「添加到主屏幕」➔ 随后从桌面图标启动本应用以开启新信通知。
+          </div>
+        </div>
+      </div>
+
+      <div class="push-controls-grid">
+        <div class="diag-item">
+          <span class="diag-label">运行架构:</span>
+          <span class="diag-val">{{ pushState.ios ? (pushState.standalone ? 'iOS 独立应用 (PWA)' : 'iOS 浏览器标签页') : (pushState.standalone ? '桌面独立应用 (Standalone)' : '现代浏览器 (Web)') }}</span>
+        </div>
+        <div class="diag-item">
+          <span class="diag-label">通知授权:</span>
+          <span class="diag-val" :class="`perm-${pushState.permission}`">
+            {{ pushState.permission === 'granted' ? '已授权许可' : (pushState.permission === 'denied' ? '已禁止通知' : '待申请权限') }}
+          </span>
+        </div>
+        <div class="diag-item">
+          <span class="diag-label">加密管道:</span>
+          <span class="diag-val">P-256 ECDH + HKDF (aes128gcm)</span>
+        </div>
+      </div>
+
+      <div class="push-actions-row">
+        <button
+          class="push-action-btn subscribe-btn"
+          :class="{ active: pushState.subscribed }"
+          :disabled="pushLoading || (pushState.ios && pushState.standalone === false)"
+          @click="togglePushSubscription"
+        >
+          <span v-if="pushLoading" class="loading-spin">✦</span>
+          <Icon v-else :icon="pushState.subscribed ? 'solar:bell-off-linear' : 'solar:bell-linear'" width="16" height="16" />
+          <span>{{ pushState.subscribed ? '停用此设备推送' : '开启收件实时通知' }}</span>
+        </button>
+
+        <button
+          class="push-action-btn test-btn"
+          :disabled="pushLoading || pushState.subscribed === false"
+          @click="handleSendTestPush"
+        >
+          <Icon icon="solar:plain-linear" width="16" height="16" />
+          <span>下发测试密信通知</span>
+        </button>
+      </div>
+    </div>
+
     <div class="language">
       <div class="title">{{$t('language')}}</div>
       <el-select
@@ -421,6 +494,7 @@ import {
   getActiveEgressMode,
   setActiveEgressMode
 } from "@/utils/egress-mode.js";
+import webPushClient from "@/utils/web-push-client.js";
 
 const { t } = useI18n()
 const accountStore = useAccountStore()
@@ -430,6 +504,64 @@ const setPwdLoading = ref(false)
 const setNameShow = ref(false)
 const accountName = ref(null)
 const langSelect = ref(settingStore.lang)
+
+const pushState = reactive({
+  supported: false,
+  ios: false,
+  standalone: false,
+  permission: 'default',
+  subscribed: false,
+  endpoint: ''
+})
+const pushLoading = ref(false)
+
+async function refreshPushState() {
+  const status = await webPushClient.getPushStatus()
+  Object.assign(pushState, status)
+}
+
+async function togglePushSubscription() {
+  pushLoading.value = true
+  try {
+    if (pushState.subscribed) {
+      await webPushClient.unsubscribe()
+      ElMessage.success({ message: '已注销本设备推送监听', plain: true })
+    } else {
+      const email = accountStore.currentAccount?.email || userStore.user?.email || ''
+      const res = await webPushClient.subscribe(email)
+      if (res.success) {
+        ElMessage.success({ message: '已成功挂接 Web Push 实时推送', plain: true })
+      } else {
+        ElMessage.warning({ message: res.message || '开启推送失败', plain: true })
+      }
+    }
+    await refreshPushState()
+  } catch (err) {
+    ElMessage.error({ message: '操作异常: ' + (err?.message || '未知错误'), plain: true })
+  } finally {
+    pushLoading.value = false
+  }
+}
+
+async function handleSendTestPush() {
+  pushLoading.value = true
+  try {
+    const res = await webPushClient.sendTest()
+    if (res?.code === 200) {
+      ElMessage.success({ message: '测试通知已调度，请留意系统横幅', plain: true })
+    } else {
+      ElMessage.warning({ message: res?.message || '测试通知调度失败', plain: true })
+    }
+  } catch (err) {
+    ElMessage.error({ message: '测试推送异常: ' + (err?.message || '网络错误'), plain: true })
+  } finally {
+    pushLoading.value = false
+  }
+}
+
+onMounted(() => {
+  refreshPushState()
+})
 
 const activeEgressMode = ref(getActiveEgressMode())
 
@@ -1957,6 +2089,230 @@ function submitPwd() {
         .archive-persona,
         .archive-egress {
           display: none;
+        }
+      }
+    }
+  }
+
+  /* 📱 ✦ 密匣传信 · 移动端 Web Push 推送节点 (Web Push Card) */
+  .codex-push-card {
+    margin-bottom: 36px;
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--el-border-color, #dcd0e4);
+    border-radius: 12px;
+    padding: 26px 28px;
+    box-shadow: 0 4px 16px rgba(43, 35, 56, 0.03);
+    position: relative;
+
+    .push-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px dashed var(--el-border-color-lighter, #ece4f2);
+      flex-wrap: wrap;
+      gap: 12px;
+
+      .push-titles {
+        .push-main-title {
+          font-family: var(--font-mincho), "Songti SC", "Noto Serif SC", serif;
+          font-weight: 700;
+          font-size: 16px;
+          color: var(--el-text-color-primary, #2b2338);
+          letter-spacing: 0.06em;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+
+          .fleuron {
+            color: #b38848;
+          }
+        }
+
+        .push-sub-title {
+          font-family: var(--font-serif-italic), "Cormorant Garamond", Georgia, serif;
+          font-size: 11px;
+          color: #9589a3;
+          letter-spacing: 0.12em;
+          margin-top: 2px;
+        }
+      }
+
+      .push-active-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        background: rgba(149, 137, 163, 0.1);
+        border: 1px solid rgba(149, 137, 163, 0.25);
+        color: #7a6e87;
+
+        .pulse-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: #9589a3;
+        }
+
+        &.active {
+          background: rgba(46, 125, 80, 0.08);
+          border-color: rgba(46, 125, 80, 0.3);
+          color: #2e7d50;
+
+          .pulse-dot {
+            background: #2e7d50;
+            box-shadow: 0 0 8px rgba(46, 125, 80, 0.6);
+            animation: badge-pulse 2s infinite ease-in-out;
+          }
+        }
+      }
+    }
+
+    .push-desc-box {
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--el-text-color-regular, #584c68);
+      background: var(--bg-hover, #faf7fc);
+      border-left: 3px solid #b38848;
+      border-radius: 0 8px 8px 0;
+      padding: 12px 16px;
+      margin-bottom: 18px;
+      display: flex;
+      gap: 8px;
+
+      .fleuron-bullet {
+        color: #b38848;
+        font-size: 11px;
+        line-height: 1.8;
+      }
+    }
+
+    .push-ios-guide {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: linear-gradient(135deg, rgba(179, 136, 72, 0.08) 0%, rgba(138, 72, 107, 0.06) 100%);
+      border: 1px solid rgba(179, 136, 72, 0.35);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 18px;
+
+      .guide-icon {
+        color: #b38848;
+        margin-top: 2px;
+      }
+
+      .guide-content {
+        .guide-title {
+          font-family: var(--font-mincho), serif;
+          font-weight: 700;
+          font-size: 13.5px;
+          color: #8a486b;
+          letter-spacing: 0.04em;
+          margin-bottom: 4px;
+        }
+
+        .guide-desc {
+          font-size: 12.5px;
+          line-height: 1.6;
+          color: var(--el-text-color-regular, #584c68);
+        }
+      }
+    }
+
+    .push-controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+
+      .diag-item {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--el-border-color-lighter, #ece4f2);
+        border-radius: 8px;
+        padding: 10px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        .diag-label {
+          font-size: 11px;
+          color: #9589a3;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+
+        .diag-val {
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--el-text-color-primary, #2b2338);
+
+          &.perm-granted {
+            color: #2e7d50;
+          }
+
+          &.perm-denied {
+            color: #b43b3b;
+          }
+        }
+      }
+    }
+
+    .push-actions-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+
+      .push-action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+        &:disabled {
+          opacity: 0.45;
+          cursor: not-allowed;
+        }
+
+        &.subscribe-btn {
+          background: #8a486b;
+          color: #ffffff;
+          border: 1px solid #75395a;
+
+          &:hover:not(:disabled) {
+            background: #9c537a;
+          }
+
+          &.active {
+            background: var(--card-bg, #ffffff);
+            color: #8a486b;
+            border-color: #dcd0e4;
+
+            &:hover:not(:disabled) {
+              background: var(--bg-hover, #faf7fc);
+              border-color: #c49e5d;
+            }
+          }
+        }
+
+        &.test-btn {
+          background: var(--card-bg, #ffffff);
+          color: var(--el-text-color-primary, #2b2338);
+          border: 1px solid var(--el-border-color, #dcd0e4);
+
+          &:hover:not(:disabled) {
+            border-color: #b38848;
+            color: #b38848;
+            background: var(--bg-hover, #faf7fc);
+          }
         }
       }
     }
